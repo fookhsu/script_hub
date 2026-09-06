@@ -1,7 +1,7 @@
 {
   "name": "bili-download",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "B站哔哩哔哩下载增强（Tampermonkey 油猴脚本）— 源码与自动化测试（单文件）",
   "scripts": {
     "test": "node test/bili_download.test.js",

@@ -2,7 +2,7 @@
 // @name            Bilibili-Download-Enhancer
 // @name:zh         哔哩哔哩下载增强
 // @namespace       https://github.com/fookhsu/script_hub/tree/main/bili_download
-// @version         1.0.0
+// @version         1.0.1
 // @description     功能开关可选（油猴菜单 → 功能开关）。B站使用增强：视频下载——普通多P与合集批量下载，合集支持「按集/全部P」切换并一键定位下载当前集，可推送 aria2/Motrix/AriaNgGUI；另含一键三连、浏览记录“已看”提示、视频简介网址自动转链接。
 // @author          fookhsu
 // @icon              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACS0lEQVRYR8WXz2oTURTGv3MnpqhNKy1UWmxRTGdaiLSQRKkKIoK4FVrRPoHu7BMYn0B3+gQquuiuiC6kaFVsAhGEZkKqG/+Vrtp0YWsyR27KlEwz0xnnT3LgwjB37vl+97tzz9whdDiow/pwBCjofN0AJohwKQgkMxYF8Dmt0bxdnhaAQoWTXMczENJBhFvGMgqk4GY6SZXmPgvAmy/cnYijGqrwvmTVHSQup2jLvG0ByJf5EYDbUQIAeJxR6U4LQHGV1VodesTijfQxBdrkaSrL6z0Hlst8i4An7QBgYDar0lMrgM45ItxrCwDjflajnC+AtR8Gvn8zGpz9xwVOjor/Zma/ANt/GIsLNWxt8p7o4IiAmlLQP+C9pvkG+FoyUPxYs52xhFDPKIh3uRviG2ClWIdsTpHoJYymFNdliQzABBsaEZg4p+DwUftliRxAggwOC0xdidma1RaAI92Ea9OHOgcwPqlANruI1AElhsa2dBKXQJEBnDglGlvxWN/BNcE3gKyCS69b64AUlMISwEv4BpDJ3778i/Xfu5XQtFtaLq+9RiCA6gZj/dcuQN8Audod6kvodYZuz9k7UOK7JPDAbXAY/WxgLjtGDy2f408VPi8MLIUh4JbDELhwNknvLQDyQNoTh87AkFuCIP0E/NzcgWYeTC0bdrkNp6Lm9bc4YM4qr/NzEGaCzNJxLONFRqMbzf22JSu/wlcphhwzpsIAIcIHriGXGadX+/MdWDPflTjRxcH+kLYJhYtj5Piz4/0gF4YVNjk6DvAPDb0aMEr8/nEAAAAASUVORK5CYII=
@@ -149,7 +149,7 @@
 	function cleanFileName(name, maxLen) {
 		let n = (name || String(Date.now()));
 		n = n.replace(/[\s\~`=|\\;:"',.><\/]/g, '');
-		return n.substring(0, maxLen || 50) + '.mp4';
+		return n.substring(0, maxLen || 100) + '.mp4';
 	}
 
 	// ============================================================
@@ -826,7 +826,7 @@
 				webToast({ message: '该集含 ' + tasks.length + ' 个分P，已勾选该集，请点击下方“批量下载”整集下载', time: 3000 });
 				return;
 			}
-			startDownloadFile({ aid: tasks[0].aid, cid: tasks[0].cid, isByPRC: false });
+			startDownloadFile(tasks[0].aid, tasks[0].cid);
 		});
 		closeBtn.addEventListener('click', hide);
 
@@ -851,7 +851,7 @@
 		});
 
 		// 批量下载：选中集/分P 展开为具体下载任务（每1秒1个）
-		$('[name="downloadAll"]', body).addEventListener('click', () => {
+		$('[name="downloadAll"]', body).addEventListener('click', async () => {
 			const rpcUrl = $('input[name="RPCURL"]', body).value;
 			const savePath = $('input[name="savePath"]', body).value;
 			const rpcToken = $('input[name="RPCToken"]', body).value || '';
@@ -874,23 +874,42 @@
 				return;
 			}
 			const prefix = prefixInput ? (prefixInput.value || '').trim() : '';
-			const tasks = [];
+			const jobs = [];
 			checkedBoxes.forEach((box) => {
-				tasksOf(box).forEach((t) => tasks.push(t));
-			});
-			tasks.forEach((task, i) => {
-				setTimeout(() => {
-					startDownloadFile({
-						aid: task.aid,
-						cid: task.cid,
+				tasksOf(box).forEach((t) => {
+					jobs.push({
+						aid: t.aid,
+						cid: t.cid,
 						// 合集行无固定 fileBase：下载时用当前“合集名前缀”实时拼接（含集名/分P标题）
-						fileName: task.fileBase !== undefined ? task.fileBase : composeSeasonFile(task, prefix),
-						isByPRC: true,
-						savePath: savePath,
-						RPCURL: rpcUrl,
-						RPCToken: rpcToken,
+						fileName: cleanFileName(t.fileBase !== undefined ? t.fileBase : composeSeasonFile(t, prefix)),
 					});
-				}, (i + 1) * 1000);
+				});
+			});
+			if (!jobs.length) return;
+			webToast({ message: '已选中 ' + jobs.length + ' 个分P，正在解析播放地址并推送到 aria2…', time: 3000 });
+
+			// 1) 受限并发解析播放直链（不再按秒 setTimeout 逐个排队）
+			const urls = await mapLimit(jobs, 4, (job) => resolvePlayUrl(job.aid, job.cid));
+			const ready = [];
+			let urlFail = 0;
+			jobs.forEach((job, i) => {
+				if (urls[i]) ready.push({ url: urls[i], out: job.fileName });
+				else urlFail++;
+			});
+			if (!ready.length) {
+				webToast({ message: '获取下载链接失败，请稍后重试', background: '#FF4D40', time: 4000 });
+				return;
+			}
+
+			// 2) 单条 WebSocket 事件驱动批量推送（请求/响应式，后台标签页也不会被定时器节流卡死）
+			const res = await rpcAddMany(ready, { savePath: savePath, rpcUrl: rpcUrl, rpcToken: rpcToken });
+			const failed = (res ? res.fail : 1) + urlFail;
+			const done = jobs.length - failed;
+			webToast({
+				message: failed ? '已推送到 aria2：成功 ' + done + '/' + jobs.length + '，失败 ' + failed + ' 个'
+					: '已全部推送到 aria2，共 ' + jobs.length + ' 个任务',
+				background: failed ? '#FF4D40' : '#4caf50',
+				time: 5000,
 			});
 		});
 
@@ -941,84 +960,130 @@
 			.catch(() => ({ status: 'request_error' }));
 	}
 
-	// 获取播放地址并触发下载
-	function startDownloadFile(options) {
-		const { aid, cid } = options;
-		gmRequest('GET', PLAYURL_API + '?avid=' + aid + '&cid=' + cid + '&qn=112')
+	// 解析单个分P的播放直链（失败返回 null）
+	function resolvePlayUrl(aid, cid) {
+		return gmRequest('GET', PLAYURL_API + '?avid=' + aid + '&cid=' + cid + '&qn=112')
 			.then((text) => {
 				let json = null;
-				try { json = JSON.parse(text); } catch (_) { /* fallthrough */ }
+				try { json = JSON.parse(text); } catch (_) { /* ignore */ }
 				if (json && json.code === 0 && json.data && json.data.durl && json.data.durl[0]) {
-					const fileName = cleanFileName(options.fileName);
-					const downloadUrl = json.data.durl[0].url;
-					if (options.isByPRC) {
-						rpcDownload({
-							fileName: fileName, url: downloadUrl,
-							savePath: options.savePath, RPCURL: options.RPCURL, RPCToken: options.RPCToken,
-						}).then(
-							(msg) => webToast({ message: msg, time: 3000 }),
-							(err) => webToast({ message: err, time: 3000, background: '#FF4D40' })
-						);
-					} else {
-						window.open(downloadUrl);
-					}
-				} else {
-					webToast({ message: '获取下载链接失败', background: '#FF4D40' });
+					return json.data.durl[0].url;
 				}
+				return null;
 			})
-			.catch(() => webToast({ message: '获取下载链接失败', background: '#FF4D40' }));
+			.catch(() => null);
 	}
 
-	// 通过 aria2 JSON-RPC(WebSocket) 推送下载任务
-	function rpcDownload(opts) {
-		const savePath = opts.savePath || 'D:/';
-		const rpcUrl = opts.RPCURL || 'ws://localhost:16800/jsonrpc';
-		return new Promise((resolve, reject) => {
-			let socket;
-			try {
-				socket = new WebSocket(rpcUrl);
-			} catch (_) {
-				reject('Aria2连接错误，请打开Aria2和检查RPC设置！');
+	// 受限并发 map（批量解析直链时限制并发，避免把 bilibili 接口打到限流）
+	function mapLimit(items, limit, fn) {
+		const results = new Array(items.length).fill(null);
+		let idx = 0;
+		const workers = [];
+		const n = Math.max(1, Math.min(limit || 4, items.length));
+		for (let w = 0; w < n; w++) {
+			workers.push((async () => {
+				while (idx < items.length) {
+					const i = idx++;
+					try { results[i] = await fn(items[i], i); } catch (_) { results[i] = null; }
+				}
+			})());
+		}
+		return Promise.all(workers).then(() => results);
+	}
+
+	// 单条 WebSocket 事件驱动批量推送 aria2.addUri：
+	// 同一连接上请求/响应式发送（收到某任务的 addUri 响应后再发下一个），
+	// 不依赖逐任务 setTimeout —— 后台/切走标签页时不会被浏览器定时器节流拖垮。
+	function rpcAddMany(tasks, cfg) {
+		const savePath = (cfg && cfg.savePath) || 'D:/';
+		const rpcUrl = (cfg && cfg.rpcUrl) || 'ws://localhost:16800/jsonrpc';
+		const rpcToken = (cfg && cfg.rpcToken) || '';
+		const total = tasks.length;
+		return new Promise((resolve) => {
+			let socket = null;
+			try { socket = new WebSocket(rpcUrl); } catch (_) {
+				resolve({ ok: 0, fail: total, reason: 'Aria2连接错误，请打开Aria2和检查RPC设置！' });
 				return;
 			}
-			let settled = false;
-			const settle = (fn, val) => {
-				if (settled) return;
-				settled = true;
+			const pending = new Map(); // id -> true（等待 aria2 应答）
+			let seq = 0;
+			let cursor = 0;      // 已发出数量
+			let inFlight = 0;    // 未收到应答数量
+			let okCount = 0;
+			let failCount = 0;
+			const MAX_IN_FLIGHT = 4;
+			let finished = false;
+			let watchdog = null;
+
+			const finish = (extraFail) => {
+				if (finished) return;
+				finished = true;
+				if (watchdog) { try { window.clearTimeout(watchdog); } catch (_) {} }
 				try { socket.close(); } catch (_) {}
-				fn(val);
+				resolve({ ok: okCount, fail: failCount + (extraFail || 0) });
 			};
-			const rpcMsg = {
-				jsonrpc: '2.0', id: 'huahuacat', method: 'aria2.addUri',
-				params: [[opts.url], {
+
+			// 连接/推送兜底：15 秒后仍未结束则给出当前结果
+			watchdog = window.setTimeout(() => {
+				finish(Math.max(0, total - okCount - failCount - inFlight) + inFlight);
+			}, 15000);
+
+			const sendOne = (t) => {
+				const id = 'bili-' + (++seq);
+				const params = [[t.url], {
 					dir: savePath,
 					'max-connection-per-server': '16',
 					header: ['User-Agent:' + navigator.userAgent, 'Cookie:' + document.cookie, 'Referer:' + window.location.href],
-				}],
-			};
-			if (opts.fileName) rpcMsg.params[1].out = opts.fileName;
-			if (opts.RPCToken) rpcMsg.params.unshift('token:' + opts.RPCToken);
-
-			socket.onerror = () => settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
-			socket.onclose = () => { if (!settled) settle(reject, 'Aria2连接已断开，请检查RPC设置！'); };
-			socket.onopen = () => {
-				try { socket.send(JSON.stringify(rpcMsg)); } catch (_) {
-					settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
+				}];
+				if (t.out) params[1].out = t.out;
+				const msg = { jsonrpc: '2.0', id: id, method: 'aria2.addUri', params: params };
+				if (rpcToken) msg.params.unshift('token:' + rpcToken);
+				pending.set(id, true);
+				inFlight++;
+				cursor++;
+				try {
+					socket.send(JSON.stringify(msg));
+				} catch (_) {
+					// 发送异常：视为失败并让出在飞名额，继续后面的任务
+					pending.delete(id);
+					inFlight--;
+					failCount++;
 				}
 			};
+
+			const drain = () => {
+				while (cursor < total && inFlight < MAX_IN_FLIGHT) sendOne(tasks[cursor]);
+				if (inFlight === 0 && cursor >= total) finish(0);
+			};
+
+			socket.onopen = () => { try { drain(); } catch (_) { finish(total - cursor); } };
+			socket.onerror = () => finish(total - cursor);
+			socket.onclose = () => finish(total - cursor);
 			socket.onmessage = (event) => {
 				let msg = null;
 				try { msg = JSON.parse(event.data); } catch (_) { return; }
-				if (msg && msg.method === 'aria2.onDownloadStart') {
-					settle(resolve, 'Aria2 开始下载【' + (opts.fileName || '') + '】');
-				} else if (msg && msg.id === 'huahuacat' && typeof msg.result === 'string') {
-					// 某些 aria2 配置不会推送 onDownloadStart，收到 addUri 响应也视为已受理
-					settle(resolve, 'Aria2 已接收下载任务【' + (opts.fileName || '') + '】');
-				}
+				if (!msg || msg.id === undefined) return; // 只关心 addUri 应答
+				const id = String(msg.id);
+				if (!pending.has(id)) return;
+				pending.delete(id);
+				inFlight--;
+				if (msg.error) failCount++;
+				else okCount++;
+				try { drain(); } catch (_) { finish(total - cursor); }
 			};
 		});
 	}
 
+	// 单分P直接下载（浏览器打开直链）
+	function startDownloadFile(aid, cid) {
+		resolvePlayUrl(aid, cid).then((url) => {
+			if (url) {
+				window.open(url);
+			} else {
+				webToast({ message: '获取下载链接失败', background: '#FF4D40' });
+			}
+		});
+	}
 	// ---------------- 浏览记录提醒 ----------------
 	function initRecordView() {
 		const host = window.location.host;

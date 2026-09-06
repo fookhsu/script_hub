@@ -171,8 +171,30 @@ function makeSandbox(options = {}) {
   window.alert = () => {};
   const wsInstances = [];
   window.WebSocket = class WebSocketStub {
-    constructor(targetUrl) { this.url = targetUrl; wsInstances.push(this); this.sent = null; this.closed = false; }
-    send(data) { try { this.sent = JSON.parse(data); } catch (_) { this.sent = String(data); } }
+    constructor(targetUrl) {
+      this.url = targetUrl;
+      wsInstances.push(this);
+      this.messages = []; // 记录所有 send 的消息（JSON 已解析）
+      this.sent = null;
+      this.closed = false;
+      // 模拟真实连接建立（代码在 onopen 之后才发送 addUri）
+      queueMicrotask(() => { if (typeof this.onopen === 'function') this.onopen(); });
+    }
+    send(data) {
+      let obj = null;
+      try { obj = JSON.parse(data); } catch (_) { obj = String(data); }
+      this.messages.push(obj);
+      this.sent = obj;
+      // 对 aria2.addUri 自动应答（返回 GID），驱动请求/响应式批量推送继续
+      if (obj && typeof obj === 'object' && obj.method === 'aria2.addUri' && obj.id) {
+        const id = obj.id;
+        queueMicrotask(() => {
+          if (typeof this.onmessage === 'function' && !this.closed) {
+            this.onmessage({ data: JSON.stringify({ jsonrpc: '2.0', id: id, result: 'stub-gid' }) });
+          }
+        });
+      }
+    }
     close() { this.closed = true; }
   };
   try { Object.defineProperty(window.location, 'reload', { value() {}, configurable: true }); } catch (_) {}

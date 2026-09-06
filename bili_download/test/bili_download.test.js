@@ -40,6 +40,12 @@ function click(el) {
   }));
 }
 
+// 批量推送现在走单条 WebSocket：收集所有 aria2.addUri 消息
+const addUriMsgs = (wsArr) => wsArr
+  .flatMap((w) => (w.messages || []).filter((m) => m && m.method === 'aria2.addUri'));
+const msgUrl = (m) => (m.params && m.params[0] && m.params[0][0]) || '';
+const msgOut = (m) => (m.params && m.params[1] && m.params[1].out) || '';
+
 // ===========================================================================
 // 1. Boot: helper page (no bilibili host) must not crash and must inject css
 // ===========================================================================
@@ -97,7 +103,7 @@ test('B站视频页：渲染下载工具栏与多P弹框', withScript({
 test('批量下载：选中2P 后向 playurl 发起请求并连接 aria2 RPC', withScript({
   url: 'https://www.bilibili.com/video/BV1GJ411x7h7/',
 }, async (sb) => {
-  const { document, gm, timers, wsInstances } = sb;
+  const { document, gm, wsInstances } = sb;
   click($q(document, '[id^="download_s_"]'));
   await sb.flush();
 
@@ -110,14 +116,15 @@ test('批量下载：选中2P 后向 playurl 发起请求并连接 aria2 RPC', w
   const playBefore = gm.requests.filter((r) => r.url.includes('/x/player/playurl')).length;
   click($q(modalBody, '[name="downloadAll"]'));
   await sb.flush();
-  timers.runTimeouts(); // 批量下载使用 setTimeout 逐个发起
-  await sb.flush();
 
   const playAfter = gm.requests.filter((r) => r.url.includes('/x/player/playurl'));
   assert.strictEqual(playAfter.length - playBefore, 2, '应为每个选中P发起 playurl 请求');
   playAfter.slice(-2).forEach((r) => assert.ok(/avid=170001&cid=100[12]&qn=112/.test(r.url), `playurl url 异常: ${r.url}`));
-  assert.strictEqual(wsInstances.length, 2, '应创建 2 个 aria2 WebSocket 连接');
-  wsInstances.forEach((ws) => assert.ok(/ws:\/\/localhost:16800\/jsonrpc/.test(ws.url)));
+  // 单条连接批量推送：两个任务都被 addUri 送出
+  const msgs = addUriMsgs(wsInstances);
+  assert.strictEqual(msgs.length, 2, '两个任务都应推送到 aria2');
+  msgs.forEach((m) => assert.ok(/upos-sz-mirrorcos\.bilivideo\.com/.test(msgUrl(m)), 'addUri 应携带播放直链'));
+  assert.ok(wsInstances.every((w) => /ws:\/\/localhost:16800\/jsonrpc/.test(w.url)), '应连接默认 RPC');
 
   // 下载设置已保存
   const saved = gm.store.get('download_setting_key');
@@ -469,7 +476,7 @@ test('[功能] 合集每集多P：勾选整集批量下载自动展开该集全�
   url: 'https://www.bilibili.com/video/BV1SEASON0001/',
   router: seasonRouter(SEASON_MULTI_VIEW),
 }, async (sb) => {
-  const { document, gm, timers, wsInstances } = sb;
+  const { document, gm, wsInstances } = sb;
   await openSeasonModal(sb);
   const modal = $q(document, '[class^="modal-body-"]');
   const items = $qa(modal, '.page-wrap .board-item');
@@ -478,13 +485,15 @@ test('[功能] 合集每集多P：勾选整集批量下载自动展开该集全�
   $q(items[0], 'input[type="checkbox"]').click();
   click($q(modal, '[name="downloadAll"]'));
   await sb.flush();
-  timers.runTimeouts();
-  await sb.flush();
 
   const reqs = playurlReqs(gm);
   assert.strictEqual(reqs.length, 2, '整集下载应展开为该集 2 个分P的请求');
   assert.ok(reqs.some((r) => /cid=9001/.test(r.url)) && reqs.some((r) => /cid=9002/.test(r.url)));
-  assert.strictEqual(wsInstances.length, 2, '应创建 2 个 aria2 连接');
+  const msgs = addUriMsgs(wsInstances);
+  assert.strictEqual(msgs.length, 2, '整集的两个分P应通过单连接 addUri 全部推送');
+  const outs = msgs.map(msgOut);
+  assert.ok(outs.some((n) => /P1/.test(n) && /上/.test(n)) && outs.some((n) => /P2/.test(n) && /下/.test(n)),
+    '两个分P应各自生成含 P编号+分P标题的文件名');
 }));
 
 test('[功能] 合集每集多P：点击多分P的集行自动勾选并提示走批量下载', withScript({
@@ -514,7 +523,7 @@ test('[功能] 合集：文件名 = 可自定义合集名前缀 + 集名 + 分P�
   url: 'https://www.bilibili.com/video/BV1SEASON0001/',
   router: seasonRouter(SEASON_MULTI_VIEW),
 }, async (sb) => {
-  const { document, window, gm, timers, wsInstances } = sb;
+  const { document, window, gm, wsInstances } = sb;
   await openSeasonModal(sb);
   const modal = $q(document, '[class^="modal-body-"]');
 
@@ -528,14 +537,11 @@ test('[功能] 合集：文件名 = 可自定义合集名前缀 + 集名 + 分P�
   boxes[0].click();
   click($q(modal, '[name="downloadAll"]'));
   await sb.flush();
-  timers.runTimeouts();
-  await sb.flush();
-  // 触发 WebSocket onopen（真实环境异步建立连接后才发送 addUri）
-  wsInstances.forEach((w) => { if (typeof w.onopen === 'function' && !w.sent) w.onopen(); });
-  await sb.flush();
 
-  assert.strictEqual(wsInstances.length, 2, '应展开为2个下载任务');
-  const outs = wsInstances.map((w) => w.sent && w.sent.params && w.sent.params[1].out);
+  // 单连接批量推送：第一批两个 addUri
+  const msgs = addUriMsgs(wsInstances);
+  assert.strictEqual(msgs.length, 2, '应展开为2个下载任务');
+  const outs = msgs.map(msgOut);
   outs.forEach((name) => {
     assert.ok(name, 'aria2 out 文件名不应为空');
     assert.ok(/测试合集标题/.test(name), '文件名应含合集名前缀, got: ' + name);
@@ -545,20 +551,17 @@ test('[功能] 合集：文件名 = 可自定义合集名前缀 + 集名 + 分P�
   assert.ok(outs.some((n) => /P1/.test(n) && /上/.test(n)), '分P1的文件名应含 P1 与分P标题');
   assert.ok(outs.some((n) => /P2/.test(n) && /下/.test(n)), '分P2的文件名应含 P2 与分P标题');
 
-  // 自定义前缀：修改后批量下载立即生效
+  // 自定义前缀：修改后批量下载立即生效（第二次点击会新建一条连接）
   prefix.value = '自定义合集名';
   prefix.dispatchEvent(new window.Event('input', { bubbles: true }));
   click($q(modal, '[name="removeSelect"]'));
   boxes[1].click(); // 第2集（单分P）
   click($q(modal, '[name="downloadAll"]'));
   await sb.flush();
-  timers.runTimeouts();
-  await sb.flush();
-  wsInstances.forEach((w) => { if (typeof w.onopen === 'function' && !w.sent) w.onopen(); });
-  await sb.flush();
 
-  assert.strictEqual(wsInstances.length, 3);
-  const last = wsInstances[2].sent && wsInstances[2].sent.params && wsInstances[2].sent.params[1].out;
+  const msgs2 = addUriMsgs(wsInstances);
+  assert.strictEqual(msgs2.length, 3, '累计 3 个 addUri 消息');
+  const last = msgOut(msgs2[2]);
   assert.ok(/自定义合集名/.test(last), '自定义前缀应生效, got: ' + last);
   assert.ok(/第2集/.test(last) && /S1第2话/.test(last), '应含第2集信息');
   assert.ok(/完整版/.test(last), '单分P的分P标题也应并入文件名, got: ' + last);
@@ -569,7 +572,7 @@ test('[功能] 合集每集单P：全选按集后批量下载整个合集', with
   url: 'https://www.bilibili.com/video/BV1SEASON0009/',
   router: seasonRouter(SEASON_SINGLE_VIEW),
 }, async (sb) => {
-  const { document, window, gm, timers, wsInstances } = sb;
+  const { document, window, gm, wsInstances } = sb;
   await openSeasonModal(sb);
   const modal = $q(document, '[class^="modal-body-"]');
 
@@ -584,13 +587,12 @@ test('[功能] 合集每集单P：全选按集后批量下载整个合集', with
   assert.ok(/已选 3\/3 集/.test($q(modal, '.dl-count').textContent));
   click($q(modal, '[name="downloadAll"]'));
   await sb.flush();
-  timers.runTimeouts();
-  await sb.flush();
 
   const reqs = playurlReqs(gm);
   assert.strictEqual(reqs.length, 3, '整个合集应发起 3 个下载请求');
   [7001, 7002, 7003].forEach((cid) => assert.ok(reqs.some((r) => r.url.indexOf('cid=' + cid) !== -1), '缺少 cid=' + cid));
-  assert.strictEqual(wsInstances.length, 3);
+  const msgs = addUriMsgs(wsInstances);
+  assert.strictEqual(msgs.length, 3, '单连接批量推送应包含 3 个 addUri（下载整个合集）');
 }));
 
 // ===========================================================================
