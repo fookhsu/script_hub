@@ -510,6 +510,60 @@ test('[功能] 合集每集多P：点击多分P的集行自动勾选并提示走
   assert.ok(toast && /批量下载/.test(toast.textContent), '应提示转批量下载');
 }));
 
+test('[功能] 合集：文件名 = 可自定义合集名前缀 + 集名 + 分P标题', withScript({
+  url: 'https://www.bilibili.com/video/BV1SEASON0001/',
+  router: seasonRouter(SEASON_MULTI_VIEW),
+}, async (sb) => {
+  const { document, window, gm, timers, wsInstances } = sb;
+  await openSeasonModal(sb);
+  const modal = $q(document, '[class^="modal-body-"]');
+
+  const prefix = $q(modal, 'input[name="dlPrefix"]');
+  assert.ok(prefix, '合集弹框应有“文件名前缀(合集名)”输入框');
+  assert.strictEqual(prefix.value, '测试合集标题', '前缀默认应为合集标题');
+  assert.ok(prefix.style.display !== 'none', '前缀输入框在合集模式应可见');
+
+  const boxes = $qa(modal, '.page-wrap input[type="checkbox"]');
+  // 第1集含2个分P：整集批量后文件名应含 前缀 + 集名 + P编号 + 分P标题
+  boxes[0].click();
+  click($q(modal, '[name="downloadAll"]'));
+  await sb.flush();
+  timers.runTimeouts();
+  await sb.flush();
+  // 触发 WebSocket onopen（真实环境异步建立连接后才发送 addUri）
+  wsInstances.forEach((w) => { if (typeof w.onopen === 'function' && !w.sent) w.onopen(); });
+  await sb.flush();
+
+  assert.strictEqual(wsInstances.length, 2, '应展开为2个下载任务');
+  const outs = wsInstances.map((w) => w.sent && w.sent.params && w.sent.params[1].out);
+  outs.forEach((name) => {
+    assert.ok(name, 'aria2 out 文件名不应为空');
+    assert.ok(/测试合集标题/.test(name), '文件名应含合集名前缀, got: ' + name);
+    assert.ok(/第1集/.test(name), '文件名应含集号');
+    assert.ok(/S1第1话/.test(name), '文件名应含集标题');
+  });
+  assert.ok(outs.some((n) => /P1/.test(n) && /上/.test(n)), '分P1的文件名应含 P1 与分P标题');
+  assert.ok(outs.some((n) => /P2/.test(n) && /下/.test(n)), '分P2的文件名应含 P2 与分P标题');
+
+  // 自定义前缀：修改后批量下载立即生效
+  prefix.value = '自定义合集名';
+  prefix.dispatchEvent(new window.Event('input', { bubbles: true }));
+  click($q(modal, '[name="removeSelect"]'));
+  boxes[1].click(); // 第2集（单分P）
+  click($q(modal, '[name="downloadAll"]'));
+  await sb.flush();
+  timers.runTimeouts();
+  await sb.flush();
+  wsInstances.forEach((w) => { if (typeof w.onopen === 'function' && !w.sent) w.onopen(); });
+  await sb.flush();
+
+  assert.strictEqual(wsInstances.length, 3);
+  const last = wsInstances[2].sent && wsInstances[2].sent.params && wsInstances[2].sent.params[1].out;
+  assert.ok(/自定义合集名/.test(last), '自定义前缀应生效, got: ' + last);
+  assert.ok(/第2集/.test(last) && /S1第2话/.test(last), '应含第2集信息');
+  assert.ok(/完整版/.test(last), '单分P的分P标题也应并入文件名, got: ' + last);
+}));
+
 // 情景B：合集内每集都是单P —— 全选/按集下载 = 下载整个合集
 test('[功能] 合集每集单P：全选按集后批量下载整个合集', withScript({
   url: 'https://www.bilibili.com/video/BV1SEASON0009/',

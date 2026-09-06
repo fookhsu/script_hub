@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name            B站哔哩哔哩下载增强
-// @name:zh         B站哔哩哔哩下载增强
-// @namespace       bilibili_namespace_20230625
-// @version         2.4.0
+// @name            Bilibili-Download-Enhancer
+// @name:zh         哔哩哔哩下载增强
+// @namespace       https://github.com/fookhsu/script_hub/tree/main/bili_download
+// @version         1.0.0
 // @description     功能开关可选（油猴菜单 → 功能开关）。B站使用增强：视频下载——普通多P与合集批量下载，合集支持「按集/全部P」切换并一键定位下载当前集，可推送 aria2/Motrix/AriaNgGUI；另含一键三连、浏览记录“已看”提示、视频简介网址自动转链接。
 // @author          fookhsu
 // @icon              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACS0lEQVRYR8WXz2oTURTGv3MnpqhNKy1UWmxRTGdaiLSQRKkKIoK4FVrRPoHu7BMYn0B3+gQquuiuiC6kaFVsAhGEZkKqG/+Vrtp0YWsyR27KlEwz0xnnT3LgwjB37vl+97tzz9whdDiow/pwBCjofN0AJohwKQgkMxYF8Dmt0bxdnhaAQoWTXMczENJBhFvGMgqk4GY6SZXmPgvAmy/cnYijGqrwvmTVHSQup2jLvG0ByJf5EYDbUQIAeJxR6U4LQHGV1VodesTijfQxBdrkaSrL6z0Hlst8i4An7QBgYDar0lMrgM45ItxrCwDjflajnC+AtR8Gvn8zGpz9xwVOjor/Zma/ANt/GIsLNWxt8p7o4IiAmlLQP+C9pvkG+FoyUPxYs52xhFDPKIh3uRviG2ClWIdsTpHoJYymFNdliQzABBsaEZg4p+DwUftliRxAggwOC0xdidma1RaAI92Ea9OHOgcwPqlANruI1AElhsa2dBKXQJEBnDglGlvxWN/BNcE3gKyCS69b64AUlMISwEv4BpDJ3778i/Xfu5XQtFtaLq+9RiCA6gZj/dcuQN8Audod6kvodYZuz9k7UOK7JPDAbXAY/WxgLjtGDy2f408VPi8MLIUh4JbDELhwNknvLQDyQNoTh87AkFuCIP0E/NzcgWYeTC0bdrkNp6Lm9bc4YM4qr/NzEGaCzNJxLONFRqMbzf22JSu/wlcphhwzpsIAIcIHriGXGadX+/MdWDPflTjRxcH+kLYJhYtj5Piz4/0gF4YVNjk6DvAPDb0aMEr8/nEAAAAASUVORK5CYII=
@@ -462,6 +462,16 @@
 				white-space:nowrap; max-width:280px; vertical-align:bottom;
 			}
 			.modal-body-${uid} .board-item.dl-cur{box-shadow:0 0 0 2px #fff inset, 0 0 0 4px #ff97b0}
+			.modal-body-${uid} .dl-prefix{
+				display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+				margin:6px 10px 0;padding:6px 10px;background:#fff;
+				border:1px dashed #eee;border-radius:4px;font-size:13px;color:#555;
+			}
+			.modal-body-${uid} .dl-prefix input{
+				flex:1;min-width:160px;max-width:280px;height:24px;padding:0 8px;
+				border:1px solid #ccc;border-radius:4px;outline:none;
+			}
+			.modal-body-${uid} .dl-prefix .tip{color:#999;font-size:12px}
 			.modal-body-${uid} .aria2-setting{
 				border:1px dashed #F1F1F1;border-radius:4px;margin-top:10px;
 			}
@@ -500,6 +510,11 @@
 				</div>
 				<div class="dl-current" style="display:none">
 					<button type="button" class="dl-current-btn" name="dlCurrent">◎ 下载当前集：<span class="dl-current-name"></span></button>
+				</div>
+				<div class="dl-prefix" style="display:none">
+					<label for="dlPrefix">文件名前缀(合集名)：</label>
+					<input type="text" id="dlPrefix" name="dlPrefix" placeholder="默认使用合集标题，可自行修改">
+					<span class="tip">示例：【前缀】第3集 标题 P1 分P标题</span>
 				</div>
 				<div class="page-wrap"></div>
 				<div class="aria2-setting">
@@ -548,6 +563,8 @@
 		const currentWrap = $('.dl-current', body);
 		const currentBtn = $('[name="dlCurrent"]', body);
 		const currentNameEl = $('.dl-current-name', body);
+		const prefixWrap = $('.dl-prefix', body);
+		const prefixInput = $('input[name="dlPrefix"]', body);
 
 		let model = null;          // {kind:'plain', parts} | {kind:'season', episodes}
 		let currentAid = null;     // 当前正在观看的视频 aid（用于定位“当前集”）
@@ -560,6 +577,22 @@
 			return String(s == null ? '' : s)
 				.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 				.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+		}
+
+		// 字符串截断（避免单个标题过长把后面内容挤出文件名）
+		function seg(s, max) {
+			s = (s == null) ? '' : String(s);
+			return s.length > max ? s.slice(0, max) : s;
+		}
+		// 组装合集下载文件名：【合集名前缀(可改)】第N集 集标题 P分页 分P标题
+		function composeSeasonFile(t, prefix) {
+			const bits = [];
+			if (prefix) bits.push('【' + seg(prefix, 16) + '】');
+			if (t.epLabel) bits.push(t.epLabel);
+			if (t.epTitle) bits.push(seg(t.epTitle, 16));
+			if (t.multi) bits.push('P' + (t.page || 1));
+			if (t.part && t.part !== t.epTitle) bits.push(seg(t.part, 24));
+			return bits.filter(Boolean).join(' ');
 		}
 
 		// 读取某一行对应的下载任务列表（checkbox 上保存了 JSON）
@@ -591,10 +624,14 @@
 				return model.episodes.map((ep) => {
 					const name = (ep.label + ' ' + ep.title).trim();
 					const multi = ep.pages.length > 1;
-					const tasks = ep.pages.map((p, k) => ({
+					const tasks = ep.pages.map((p) => ({
 						aid: p.aid || ep.aid,
 						cid: p.cid,
-						fileBase: name + (multi ? (p.part ? ' P' + (k + 1) + ' ' + p.part : ' P' + (k + 1)) : ''),
+						epLabel: ep.label,
+						epTitle: ep.title,
+						multi: multi,
+						page: p.page || 1,
+						part: p.part || '',
 					}));
 					return { name: name, multi: multi, tasks: tasks };
 				});
@@ -604,9 +641,21 @@
 			model.episodes.forEach((ep) => {
 				const base = (ep.label + ' ' + ep.title).trim();
 				const multi = ep.pages.length > 1;
-				ep.pages.forEach((p, k) => {
-					const name = base + (multi ? (p.part ? ' P' + (k + 1) + ' ' + p.part : ' P' + (k + 1)) : '');
-					rows.push({ name: name, multi: false, tasks: [{ aid: p.aid || ep.aid, cid: p.cid, fileBase: name }] });
+				ep.pages.forEach((p) => {
+					const name = base + (multi ? (p.part ? ' P' + p.page + ' ' + p.part : ' P' + p.page) : '');
+					rows.push({
+						name: name,
+						multi: false,
+						tasks: [{
+							aid: p.aid || ep.aid,
+							cid: p.cid,
+							epLabel: ep.label,
+							epTitle: ep.title,
+							multi: multi,
+							page: p.page || 1,
+							part: p.part || '',
+						}],
+					});
 				});
 			});
 			return rows;
@@ -684,6 +733,13 @@
 				scope = 'plain';
 				scopeRow.style.display = 'none';
 			}
+			// 合集名前缀：默认填合集标题，批量下载时拼进文件名（手动改过后不覆盖）
+			if (model && model.kind === 'season' && prefixWrap && prefixInput) {
+				prefixWrap.style.display = '';
+				if (!prefixInput.dataset.edited) prefixInput.value = model.title || '';
+			} else if (prefixWrap) {
+				prefixWrap.style.display = 'none';
+			}
 			renderList();
 			refreshCurrentBtn();
 			applySavedSettings();
@@ -726,6 +782,10 @@
 				selectionSummary();
 			});
 		});
+		// 用户手动改过“文件名前缀”后，重开弹框不要覆盖
+		if (prefixInput) {
+			prefixInput.addEventListener('input', () => { prefixInput.dataset.edited = '1'; });
+		}
 
 		// “下载当前集”：一键定位并只勾选正在观看的这集
 		currentBtn.addEventListener('click', () => {
@@ -813,6 +873,7 @@
 				webToast({ message: 'RPC地址不能为空', background: '#FF4D40' });
 				return;
 			}
+			const prefix = prefixInput ? (prefixInput.value || '').trim() : '';
 			const tasks = [];
 			checkedBoxes.forEach((box) => {
 				tasksOf(box).forEach((t) => tasks.push(t));
@@ -822,7 +883,8 @@
 					startDownloadFile({
 						aid: task.aid,
 						cid: task.cid,
-						fileName: task.fileBase,
+						// 合集行无固定 fileBase：下载时用当前“合集名前缀”实时拼接（含集名/分P标题）
+						fileName: task.fileBase !== undefined ? task.fileBase : composeSeasonFile(task, prefix),
 						isByPRC: true,
 						savePath: savePath,
 						RPCURL: rpcUrl,
@@ -860,9 +922,9 @@
 						return {
 							status: 'success',
 							downloadData: {
-								model: { kind: 'season', episodes: season.episodes, currentAid: aid },
+								model: { kind: 'season', episodes: season.episodes, currentAid: aid, title: season.title || '' },
 								pic: pic,
-								title: season.title || title,
+								title: title,
 							},
 						};
 					}

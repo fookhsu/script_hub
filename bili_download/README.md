@@ -12,7 +12,7 @@ script_hub/bili_download/
 └── test/
     ├── package.json            # 测试依赖声明（jsdom / jquery，仅测试用）
     ├── harness.js              # jsdom 沙箱：GM_* mock、假定时器、jQuery/findAndReplace 替身
-    ├── bili_download.test.js   # 20 个集成测试用例
+    ├── bili_download.test.js   # 21 个集成测试用例
     └── node_modules/
 ```
 
@@ -24,7 +24,7 @@ script_hub/bili_download/
 | --- | --- | --- |
 | 多P/合集视频下载 | 左侧粉色挂件点“下载视频”→ 拉取可下载列表 | `www.bilibili.com/video/*`、`/watchlater*` |
 | 普通多P | 每个分P一行，可单P或批量下载 | 同上 |
-| 合集(ugc_season)范围切换 | 合集页自动出现「按集下载(合集) / 下载全部P」：① 每集含多P → 按集整集勾选，批量时自动展开该集全部分P逐个下载；② 每集单P → 按集即每集一行，顶部全选=一次下完整个合集；③ 需要单独挑分P可切“下载全部P”；④ 集数很多时可点「下载当前集」（自动带集名，点击后只勾选当前正在观看的集并滚动定位） | 合集视频页 |
+| 合集(ugc_season)范围切换 | 合集页自动出现「按集下载(合集) / 下载全部P」：① 每集含多P → 按集整集勾选，批量时自动展开该集全部分P逐个下载；② 每集单P → 按集即每集一行，顶部全选=一次下完整个合集；③ 需要单独挑分P可切“下载全部P”；④ 集数很多时可点「下载当前集」（自动带集名，点击后只勾选当前正在观看的集并滚动定位）；⑤ 下载文件名可自定义「合集名」前缀（默认=合集标题），并自动并入集名与分P标题，形如 `【合集】第3集 标题 P1 分P标题` | 合集视频页 |
 | 批量下载 | 勾选后通过 **aria2 JSON-RPC(WebSocket)** 推送到 Motrix / AriaNgGUI，支持自定义 RPC 地址/Token/保存路径，设置自动记忆；列表顶部有一键「全选」与“已选 N/M”计数（含半选态） | 同上 |
 | 单P下载 | 点击某一行标题直接 `window.open` 播放直链；多分P的“集”点击后自动勾选并提示走批量下载 | 同上 |
 | 一键三连 | 挂件“一键三连”按钮（点赞 + 投币） | 同上 |
@@ -74,7 +74,7 @@ script_hub/bili_download/
 ```bash
 cd script_hub/bili_download
 npm install --prefix test        # 首次安装测试依赖（jsdom / jquery）
-npm test                         # 默认对 bili_download.js 运行全部用例 → 20/20
+npm test                         # 默认对 bili_download.js 运行全部用例 → 21/21
 ```
 
 也可直接指定被测文件（便于对比 git 历史旧版）：
@@ -83,9 +83,9 @@ npm test                         # 默认对 bili_download.js 运行全部用例
 SCRIPT_PATH=./bili_download.js node test/bili_download.test.js
 ```
 
-测试运行器支持 `KNOWN_FAIL_SUBSTR`（逗号分隔）：名称命中关键词的失败用例只提示、不置为非零退出码。当前仓库内单份脚本应 **20/20** 全绿；如检出历史旧版跑测试，可用它把“旧版缺失的新功能/已修复 Bug”归类为已知失败。
+测试运行器支持 `KNOWN_FAIL_SUBSTR`（逗号分隔）：名称命中关键词的失败用例只提示、不置为非零退出码。当前仓库内单份脚本应 **21/21** 全绿；如检出历史旧版跑测试，可用它把“旧版缺失的新功能/已修复 Bug”归类为已知失败。
 
-### 用例清单（共 20 条）
+### 用例清单（共 21 条）
 
 1. 通用页面加载无报错，注册“功能开关”菜单
 2. 普通视频页渲染工具栏与多P弹框（mock view 返回 3P）
@@ -107,6 +107,7 @@ SCRIPT_PATH=./bili_download.js node test/bili_download.test.js
 18. （回归）弹框默认真正选中 Motrix 单选框
 19. （回归）切换 AriaNgGUI 自动带出 ws://localhost:6800 RPC 地址
 20. （回归）服务器导航设置菜单保存后正常弹提示（对应旧版 `toast.show` Bug）
+21. （新功能）合集文件名 = 可自定义“合集名前缀”（默认合集标题）+ 集名 + 分P标题（含 P 编号），修改前缀后立即生效
 
 ### 新增/维护用例
 

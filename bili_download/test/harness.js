@@ -171,9 +171,9 @@ function makeSandbox(options = {}) {
   window.alert = () => {};
   const wsInstances = [];
   window.WebSocket = class WebSocketStub {
-    constructor(targetUrl) { this.url = targetUrl; wsInstances.push(this); }
-    send() {}
-    close() {}
+    constructor(targetUrl) { this.url = targetUrl; wsInstances.push(this); this.sent = null; this.closed = false; }
+    send(data) { try { this.sent = JSON.parse(data); } catch (_) { this.sent = String(data); } }
+    close() { this.closed = true; }
   };
   try { Object.defineProperty(window.location, 'reload', { value() {}, configurable: true }); } catch (_) {}
 
