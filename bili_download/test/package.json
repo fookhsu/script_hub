@@ -1,0 +1,10 @@
+{
+  "name": "bili-download-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "测试依赖（jsdom：用户脚本沙箱；jquery：仅原版脚本测试需要）",
+  "dependencies": {
+    "jsdom": "^26.0.0",
+    "jquery": "^3.7.1"
+  }
+}

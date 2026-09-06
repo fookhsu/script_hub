@@ -1,0 +1,991 @@
+// ==UserScript==
+// @name              B站哔哩哔哩使用增强
+// @name:zh           B站哔哩哔哩使用增强
+// @name:zh-TW		  B站嗶哩嗶哩使用增強
+// @namespace         bilibili_namespace_20230625
+// @version           2.2.0
+// @description       功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
+// @description:zh    功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
+// @description:zh-TW 功能可選擇性開啟：1、B站使用增強：支援視頻下載(👉支援多P批量快速下載👈)、瀏覽記錄提示、一鍵三連、自動簽到、描述文本網址轉連結等；
+// @author            huahuacat
+// @icon              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACS0lEQVRYR8WXz2oTURTGv3MnpqhNKy1UWmxRTGdaiLSQRKkKIoK4FVrRPoHu7BMYn0B3+gQquuiuiC6kaFVsAhGEZkKqG/+Vrtp0YWsyR27KlEwz0xnnT3LgwjB37vl+97tzz9whdDiow/pwBCjofN0AJohwKQgkMxYF8Dmt0bxdnhaAQoWTXMczENJBhFvGMgqk4GY6SZXmPgvAmy/cnYijGqrwvmTVHSQup2jLvG0ByJf5EYDbUQIAeJxR6U4LQHGV1VodesTijfQxBdrkaSrL6z0Hlst8i4An7QBgYDar0lMrgM45ItxrCwDjflajnC+AtR8Gvn8zGpz9xwVOjor/Zma/ANt/GIsLNWxt8p7o4IiAmlLQP+C9pvkG+FoyUPxYs52xhFDPKIh3uRviG2ClWIdsTpHoJYymFNdliQzABBsaEZg4p+DwUftliRxAggwOC0xdidma1RaAI92Ea9OHOgcwPqlANruI1AElhsa2dBKXQJEBnDglGlvxWN/BNcE3gKyCS69b64AUlMISwEv4BpDJ3778i/Xfu5XQtFtaLq+9RiCA6gZj/dcuQN8Audod6kvodYZuz9k7UOK7JPDAbXAY/WxgLjtGDy2f408VPi8MLIUh4JbDELhwNknvLQDyQNoTh87AkFuCIP0E/NzcgWYeTC0bdrkNp6Lm9bc4YM4qr/NzEGaCzNJxLONFRqMbzf22JSu/wlcphhwzpsIAIcIHriGXGadX+/MdWDPflTjRxcH+kLYJhYtj5Piz4/0gF4YVNjk6DvAPDb0aMEr8/nEAAAAASUVORK5CYII=
+// @include	   	      *://www.bilibili.com/**
+// @include           *://search.bilibili.com/**
+// @include           *://space.bilibili.com/**
+// @include           *://www.bilibili.com/read/**
+// @exclude           *://cloud.tencent.com/login*
+// @exclude           *://console.cloud.tencent.com/*
+// @exclude           *://market.cloud.tencent.com/*
+// @exclude           *://www.aliyun.com/smarter-engine/*
+// @exclude           *://account.aliyun.com/*
+// @exclude           *://developer.aliyun.com/*
+// @exclude           *://promotion.aliyun.com/*
+// @exclude           *://free.aliyun.com/*
+// @exclude           *://summit.aliyun.com/*
+// @exclude           *://startup.aliyun.com/*
+// @exclude           *://university.aliyun.com/*
+// @exclude           *://careers.aliyun.com/*
+// @exclude           *://market.aliyun.com/*
+// @exclude           *://yunqi.aliyun.com/*
+// @exclude           *://help.aliyun.com/*
+// @exclude           *://g.alicdn.com/*
+// @exclude           *://passport.aliyun.com/*
+// @exclude           *://*.console.aliyun.com/*
+// @exclude           *://auth.huaweicloud.com/*
+// @exclude           *://support.huaweicloud.com/*
+// @exclude           *://console.huaweicloud.com/*
+// @exclude           *://accounts.youtube.com/*
+// @exclude           *://www.youtube.com/live_chat_replay*
+// @exclude           *://www.youtube.com/persist_identity*
+// @connect           bilibili.com
+// @connect           staticj.top
+// @grant             GM_getValue
+// @grant             GM.getValue
+// @grant             GM_setValue
+// @grant             GM.setValue
+// @grant             GM_xmlhttpRequest
+// @grant             GM.xmlHttpRequest
+// @grant             GM_registerMenuCommand
+// @license           AGPL License
+// @charset		      UTF-8
+// @run-at            document-idle
+// ==/UserScript==
+/**
+ * 脚本遵循 AGPL License 开源协议；在协议允许的范围内可以自由修改。
+ * 本文件为 bili_download.js 的优化重构版：
+ *   1. 去掉 jQuery / findAndReplaceDOMText 两个 CDN 依赖，全部改用原生 DOM；
+ *   2. 分P信息改为一次 API 请求获取（原来是 bvid、aid 各请求一次）；
+ *   3. 清理未使用的死代码与重复实现的 GM 包装；
+ *   4. 修复若干问题：单选框用 prop 选中、简介转链接的无限循环隐患、
+ *      toast.show 未定义、dialog 关闭异常等。
+ */
+(function () {
+	'use strict';
+
+	// ============================================================
+	// 通用小工具
+	// ============================================================
+	const $ = (sel, root) => (root || document).querySelector(sel);
+	const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+
+	// 随机后缀，避免与页面内其它元素冲突
+	const rid = () => Math.ceil(Math.random() * 100000000);
+
+	// 兼容 GM_* 同步 API 与 GM.* 异步 API、以及无 GM 环境下的 localStorage
+	function gmGet(name, def) {
+		if (typeof GM_getValue === 'function') return GM_getValue(name, def);
+		if (typeof GM !== 'undefined' && typeof GM.getValue === 'function') {
+			let v = def;
+			GM.getValue(name, def).then((val) => { v = val; });
+			return v;
+		}
+		const val = localStorage.getItem(name);
+		return val === null ? def : val;
+	}
+	function gmSet(name, value) {
+		if (typeof GM_setValue === 'function') return GM_setValue(name, value);
+		if (typeof GM !== 'undefined' && typeof GM.setValue === 'function') return GM.setValue(name, value);
+		return localStorage.setItem(name, value);
+	}
+
+	// 往 <head> 注入样式
+	function addStyle(css) {
+		const styleEl = document.createElement('style');
+		styleEl.textContent = css;
+		(document.head || document.documentElement).appendChild(styleEl);
+		return styleEl;
+	}
+
+	// 网络请求（GET/POST 文本）
+	function gmRequest(method, url, data) {
+		return new Promise((resolve, reject) => {
+			GM_xmlhttpRequest({
+				method: method || 'GET',
+				url: url,
+				data: data,
+				onload: (res) => {
+					if (res.status === 200 || res.status === '200') resolve(res.responseText);
+					else reject(new Error('http status ' + res.status));
+				},
+				onerror: () => reject(new Error('network error')),
+			});
+		});
+	}
+
+	function isPC() {
+		return !/Android|iPhone|SymbianOS|Windows Phone|iPad|iPod/i.test(navigator.userAgent);
+	}
+	function getSystemOS() {
+		const u = navigator.userAgent;
+		if (/Windows/i.test(u)) return 'windows';
+		if (/Macintosh|MacIntel/i.test(u)) return 'macOS';
+		if (/iPhone|iPad/i.test(u)) return 'ios';
+		if (/Android/i.test(u)) return 'android';
+		return 'other';
+	}
+	// 从当前路径解析 BV 号（兼容稍后再看页）
+	function currentBv() {
+		const pathname = window.location.pathname;
+		if (pathname.indexOf('/medialist/play/watchlater/') !== -1) {
+			return pathname.replace('/medialist/play/watchlater/', '').split('/')[0] || '';
+		}
+		const m = pathname.match(/\/video\/(BV[0-9A-Za-z]+)/);
+		return m ? m[1] : '';
+	}
+
+	// 小提示框（原 webToast）：动画结束后必定移除元素，避免残留
+	let toastCssInjected = false;
+	function webToast(params) {
+		if (!toastCssInjected) {
+			toastCssInjected = true;
+			addStyle(`
+				@keyframes shx-fade-in{0%{opacity:0}100%{opacity:1}}
+				@keyframes shx-fade-out{0%{opacity:1}100%{opacity:0}}
+				.web-toast-kkli9{
+					position:fixed; background:rgba(0,0,0,.7); color:#fff;
+					font-size:14px; line-height:1; padding:10px; border-radius:3px;
+					left:50%; transform:translateX(-50%);
+					z-index:999999999; white-space:nowrap;
+				}
+				.web-toast-kkli9.shx-in{animation:shx-fade-in .5s}
+				.web-toast-kkli9.shx-out{animation:shx-fade-out .5s}
+			`);
+		}
+		const el = document.createElement('div');
+		el.className = 'web-toast-kkli9 shx-in';
+		if (params.message !== undefined && params.message !== null) el.textContent = String(params.message);
+		if (params.background) el.style.backgroundColor = params.background;
+		if (params.color) el.style.color = params.color;
+		el.style.top = '50px';
+		el.style.bottom = '';
+		document.body.appendChild(el);
+
+		const remove = () => {
+			if (el.parentNode) el.parentNode.removeChild(el);
+		};
+		const delay = params.time || 1500;
+		const finish = () => {
+			el.classList.remove('shx-in');
+			el.classList.add('shx-out');
+		};
+		// 动画结束则移除；若动画事件不触发（如无头环境），仍有兜底定时器
+		el.addEventListener('animationend', remove, { once: true });
+		setTimeout(() => { finish(); setTimeout(remove, 600); }, delay);
+	}
+
+	// 文件名清洗：去掉非法字符并限制长度
+	function cleanFileName(name, maxLen) {
+		let n = (name || String(Date.now()));
+		n = n.replace(/[\s\~`=|\\;:"',.><\/]/g, '');
+		return n.substring(0, maxLen || 50) + '.mp4';
+	}
+
+	// ============================================================
+	// 全局功能开关 + 设置弹框
+	// ============================================================
+	const SETTING_KEY = 'setingData';
+	let settings = gmGet(SETTING_KEY, null);
+	if (!settings || typeof settings !== 'object') settings = { bilibiliHelper: true };
+	if (typeof settings.bilibiliHelper !== 'boolean') {
+		settings.bilibiliHelper = true;
+		gmSet(SETTING_KEY, settings);
+	}
+
+	// 轻量对话框
+	const dialog = (() => {
+		let handle = null;
+		function close() {
+			if (!handle) return;
+			if (handle.mask.parentNode) handle.mask.parentNode.removeChild(handle.mask);
+			document.removeEventListener('keydown', handle.onKey);
+			handle = null;
+		}
+		function open(param) {
+			close(); // 防止重复打开出现多个遮罩
+			const isStr = typeof param === 'string';
+			const opts = isStr ? { title: param } : (param || {});
+
+			const mask = document.createElement('div');
+			const content = document.createElement('div');
+			const head = document.createElement('div');
+			const titleEl = document.createElement('span');
+			const closeBtn = document.createElement('span');
+			const body = document.createElement('div');
+
+			Object.assign(mask.style, {
+				width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,.6)',
+				position: 'fixed', left: '0', top: '0', zIndex: 9999999999,
+			});
+			Object.assign(content.style, {
+				maxWidth: '450px', width: '100%', maxHeight: '600px', backgroundColor: '#fff',
+				boxShadow: '0 0 2px #999', position: 'absolute', left: '50%', top: '50%',
+				transform: 'translate(-50%,-50%)', borderRadius: '5px',
+			});
+			Object.assign(head.style, {
+				width: '100%', height: '40px', lineHeight: '40px', boxSizing: 'border-box',
+				backgroundColor: '#dedede', color: '#000', textAlign: 'center',
+				fontWeight: '700', fontSize: '17px', borderRadius: '4px 4px 0 0', position: 'relative',
+			});
+			Object.assign(closeBtn.style, {
+				textDecoration: 'none', color: '#000', position: 'absolute', right: '10px',
+				top: '0', fontSize: '25px', cursor: 'pointer', userSelect: 'none',
+			});
+			Object.assign(body.style, { padding: '15px', maxHeight: '400px', overflowY: 'auto' });
+
+			titleEl.textContent = opts.title || '默认标题';
+			closeBtn.textContent = '×';
+			body.innerHTML = opts.content || '';
+			head.appendChild(titleEl);
+			head.appendChild(closeBtn);
+			content.appendChild(head);
+			content.appendChild(body);
+			mask.appendChild(content);
+			document.body.appendChild(mask);
+
+			handle = {
+				mask, content: body, close,
+				onKey: (e) => { if (e.key === 'Escape') close(); },
+			};
+			document.addEventListener('keydown', handle.onKey);
+
+			closeBtn.addEventListener('click', () => {
+				close();
+				if (typeof opts.onClose === 'function') opts.onClose();
+			});
+			if (typeof opts.onContentReady === 'function') {
+				opts.onContentReady({ content: body, dialog: handle });
+			}
+			return handle;
+		}
+		return { open, close };
+	})();
+
+	// 菜单“功能开关”
+	function usersSeting() {
+		const rows = [{
+			tag: 'bilibiliHelper',
+			name: 'B站使用加强(视频下载支持批量、浏览记录、一键三连)',
+			checked: !!settings.bilibiliHelper,
+		}];
+		const html = rows.map((one) => `
+			<div style="padding:5px 0">
+				<input style="width:15px;height:15px;vertical-align:middle;margin-bottom:3px;cursor:pointer"
+					type="checkbox" data-tag="${one.tag}" ${one.checked ? 'checked' : ''}>
+				<label style="font-size:14px;margin:3px 0;vertical-align:middle;font-weight:500;color:#000">${one.name}</label>
+			</div>`).join('');
+
+		dialog.open({
+			title: '功能开关',
+			content: html,
+			onClose: () => { try { location.reload(); } catch (_) {} },
+			onContentReady: (api) => {
+				$$('input[type="checkbox"]', api.content).forEach((checkbox) => {
+					checkbox.addEventListener('click', (e) => {
+						settings[e.target.getAttribute('data-tag')] = e.target.checked;
+						gmSet(SETTING_KEY, settings);
+						webToast({ message: '操作成功', background: '#FF4D40' });
+					});
+				});
+			},
+		});
+	}
+
+	// ============================================================
+	// B站增强：视频下载 / 一键三连 / 浏览记录 / 简介转链接
+	// ============================================================
+	const VIEW_API = 'https://api.bilibili.com/x/web-interface/view';
+	const PLAYURL_API = 'https://api.bilibili.com/x/player/playurl';
+	const DOWNLOAD_SETTING_KEY = 'download_setting_key';
+	const RECORD_KEY = 'bilibili_video_record';
+	const DEFAULT_DOWNLOAD_SETTING = () => ({
+		RPCURL: 'ws://localhost:16800/jsonrpc',
+		savePath: getSystemOS() === 'macOS' ? '' : 'D:/',
+		RPCToken: '',
+		downloadWay: 'Motrix',
+	});
+
+	function startBilibiliHelper() {
+		const host = window.location.host;
+		const pathname = window.location.pathname;
+		const onVideoPage = host === 'www.bilibili.com' &&
+			(pathname.indexOf('/video') !== -1 || pathname.indexOf('/watchlater') !== -1);
+
+		if (onVideoPage) initVideoToolbar();
+		initRecordView();
+		initTextToLink();
+	}
+
+	// ---------------- 视频下载 / 一键三连 ----------------
+	function initVideoToolbar() {
+		// 清理可能残留的旧挂件
+		const old = $('[id^="bilibili_exti_"]');
+		if (old && old.parentNode) old.parentNode.removeChild(old);
+
+		const uid = rid();
+		const container = document.createElement('div');
+		container.id = 'bilibili_exti_' + uid;
+		container.className = 'shx-bili-toolbar';
+		container.innerHTML = `
+			<div class="self_s_btn" id="download_s_${uid}">下载视频</div>
+			<div class="self_s_btn" id="focus_s_${uid}">一键三连</div>`;
+		document.body.appendChild(container);
+
+		// 创建下载弹框
+		const modal = buildDownloadModal(uid);
+		document.body.appendChild(modal.mask);
+		document.body.appendChild(modal.body);
+
+		// 挂件移入移出
+		container.addEventListener('mouseenter', () => {
+			container.style.left = '0px';
+			container.style.opacity = '1';
+		});
+		container.addEventListener('mouseleave', () => {
+			container.style.left = '-' + Math.max(0, (container.offsetWidth || 60) / 2) + 'px';
+			container.style.opacity = '0.6';
+		});
+
+		// 一键三连
+		$('#focus_s_' + uid, container).addEventListener('click', () => {
+			const bar = $('#arc_toolbar_report');
+			const like = $('.video-like', bar);
+			const coin = $('.video-coin', bar);
+			if (like) like.click();
+			if (coin) coin.click();
+		});
+
+		// 下载
+		const downloadBtn = $('#download_s_' + uid, container);
+		downloadBtn.addEventListener('click', () => {
+			downloadBtn.disabled = true;
+			downloadBtn.textContent = '准备中~';
+			prepareDownloadPages()
+				.then((result) => {
+					if (result.status === 'success') {
+						const { items, pic, title } = result.downloadData;
+						modal.show(items, pic, title);
+					}
+				})
+				.catch(() => { /* ignore */ })
+				.then(() => {
+					downloadBtn.disabled = false;
+					downloadBtn.textContent = '下载视频';
+				});
+		});
+
+		addStyle(`
+			.shx-bili-toolbar{
+				position:fixed; left:-30px; top:250px; opacity:.6; transition:.3s; z-index:9999;
+			}
+			.shx-bili-toolbar .self_s_btn{
+				background-color:#FB7299; color:#FFF; font-size:12px; border-radius:3px;
+				cursor:pointer; margin:10px 0; width:64px; height:22px; text-align:center;
+				line-height:22px;
+			}
+			.shx-bili-toolbar .self_s_btn[disabled]{ opacity:.5; cursor:wait; }
+		`);
+	}
+
+	// 构建下载弹框 DOM（返回 {mask, body, show, hide}）
+	function buildDownloadModal(uid) {
+		const CSS = `
+			.modal-mask-${uid}{
+				position:fixed; top:0; left:0; z-index:999; width:100%; height:100%;
+				display:none; background-color:#000; opacity:.3;
+			}
+			.modal-body-${uid}{
+				position:fixed; border-radius:5px; background:#fff; top:10%; width:600px;
+				max-width:90%; max-height:80%; z-index:1000; left:50%;
+				transform:translateX(-50%); display:none; padding:10px; overflow-y:auto;
+			}
+			.modal-body-${uid} .page-header{height:30px;line-height:30px;position:relative}
+			.modal-body-${uid} .page-header>span{display:inline-block}
+			.modal-body-${uid} .page-header>span:nth-child(1){
+				font-size:18px;font-weight:bold;position:absolute;left:10px;
+			}
+			.modal-body-${uid} .page-header>span:nth-child(2){
+				font-size:28px;font-weight:bold;position:absolute;right:10px;cursor:pointer;
+			}
+			.modal-body-${uid} .page-container{max-height:500px;overflow-y:auto}
+			.modal-body-${uid} .page-wrap{display:flex;flex-wrap:wrap;margin-top:5px}
+			.modal-body-${uid} .page-wrap>.board-item{
+				display:block;width:calc(50% - 10px);background:#FB7299;color:#fff;
+				margin:5px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+				border-radius:3px;
+			}
+			.modal-body-${uid} .page-wrap>.board-item input{
+				width:14px;height:14px;vertical-align:middle;margin-right:5px;
+			}
+			.modal-body-${uid} .page-wrap>.board-item>span{vertical-align:middle;display:inline-block;max-width:80%;overflow:hidden;text-overflow:ellipsis}
+			.modal-body-${uid} .modal-btn-wrap{text-align:center;margin-top:10px;cursor:pointer}
+			.modal-body-${uid} .modal-btn-wrap>span{
+				border:1px solid #ccc;display:inline-block;padding:3px 8px;margin:0 5px;border-radius:3px;
+			}
+			.modal-body-${uid} .aria2-setting{
+				border:1px dashed #F1F1F1;border-radius:4px;margin-top:10px;
+			}
+			.modal-body-${uid} .setting-item{text-align:center;font-size:14px;margin:10px 0}
+			.modal-body-${uid} .setting-item .topic-name{
+				display:inline-block;width:80px;text-align:left;
+			}
+			.modal-body-${uid} .setting-item>input{
+				width:300px;padding-left:10px;border:1px solid #888;outline:none;border-radius:3px;height:24px;
+			}
+			.modal-body-${uid} .tip-wrap{margin-top:10px;font-size:12px}
+			.modal-body-${uid} .tip-wrap>.title{font-size:16px;font-weight:bold}
+			.modal-body-${uid} .tip-wrap>.content>ul>li{margin-top:5px;line-height:1.6}
+		`;
+		addStyle(CSS);
+
+		const mask = document.createElement('div');
+		mask.className = 'modal-mask-' + uid;
+		const body = document.createElement('div');
+		body.className = 'modal-body-' + uid;
+		body.innerHTML = `
+			<div class="page-header">
+				<span>视频下载(可批量)</span>
+				<span class="close">×</span>
+			</div>
+			<div class="page-container">
+				<label style="color:red;font-size:12px">注：此功能会调用bilibili的API，脚本仅用于个人交流，切勿用于商业用途，否则后果自负，特此申明！</label>
+				<div class="page-wrap"></div>
+				<div class="aria2-setting">
+					<div class="setting-item">
+						<span><input type="radio" name="downloadWay" value="Motrix">Motrix下载</span>&nbsp;&nbsp;&nbsp;
+						<span><input type="radio" name="downloadWay" value="AriaNgGUI">AriaNgGUI下载</span>
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">配置RPC:</label>
+						<input type="text" name="RPCURL" placeholder="请准确输入RPC对应软件的地址，默认：Motrix">
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">配置Token:</label>
+						<input type="text" name="RPCToken" placeholder="默认无需填写">
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">保存路径:</label>
+						<input type="text" name="savePath" placeholder="请准确输入文件保存路径">
+						<div style="font-size:12px;color:#888">最好自定义下载地址，默认地址可能不满足需要</div>
+					</div>
+				</div>
+				<div class="modal-btn-wrap">
+					<span name="selectall">全选</span>
+					<span name="removeSelect">取消选择</span>
+					<span name="downloadAll">批量下载</span>
+				</div>
+				<div class="tip-wrap">
+					<div class="title">关于单P下载：</div>
+					<div class="content"><span>点击弹框内单个分P标题即可下载单集视频！推荐使用
+						<a target="_blank" href="https://github.com/nilaoda/BBDown">BBDown</a>（功能强大，支持登录/合集/多P）</span></div>
+				</div>
+				<div class="tip-wrap">
+					<div class="title">关于批量下载：</div>
+					<div class="content"><ul>
+						<li>1、批量下载需要第三方软件支持（推荐 <a target="_blank" href="https://motrix.app/zh-CN/">Motrix</a>，或 <a target="_blank" href="https://github.com/Xmader/aria-ng-gui">AriaNgGUI</a>），使用前请先打开软件</li>
+						<li>2、Motrix 默认 RPC：ws://localhost:16800/jsonrpc；Aria2 默认 RPC：ws://localhost:6800/jsonrpc</li>
+						<li>3、点击“批量下载”会自动保存当前下载设置</li>
+					</ul></div>
+				</div>
+			</div>`;
+
+		const pageWrap = $('.page-wrap', body);
+		const closeBtn = $('.page-header .close', body);
+
+		function hide() {
+			body.style.display = 'none';
+			mask.style.display = 'none';
+		}
+		function show(items, pic, title) {
+			const itemHtml = [
+				`<div style="width:100%"><a href="${pic}" target="_blank">标题：${title}（点我跳转封面）</a></div>`,
+				...items.map((it) => {
+					const t = '【P' + it.page + '】' + it.title;
+					return `<div class="board-item"><input type="checkbox" data-aid="${it.aid}" data-cid="${it.cid}" title="${t}">
+						<span data-aid="${it.aid}" data-cid="${it.cid}" title="${t}">${t}</span></div>`;
+				}),
+			].join('');
+			pageWrap.innerHTML = itemHtml;
+			applySavedSettings();
+			body.style.display = 'block';
+			mask.style.display = 'block';
+		}
+
+		// 读取/回填 aria2 设置（含默认值）
+		function applySavedSettings() {
+			const saved = gmGet(DOWNLOAD_SETTING_KEY, null) || {};
+			const conf = Object.assign(DEFAULT_DOWNLOAD_SETTING(), saved);
+
+			$('input[name="RPCURL"]', body).value = conf.RPCURL;
+			$('input[name="savePath"]', body).value = conf.savePath;
+			$('input[name="RPCToken"]', body).value = conf.RPCToken;
+			const radios = $$('input[name="downloadWay"]', body);
+			radios.forEach((r) => { r.checked = (r.value === conf.downloadWay); });
+			if (!radios.some((r) => r.checked)) radios[0].checked = true;
+		}
+
+		// 单个分P下载：直接调用播放地址
+		function downloadOne(aid, cid) {
+			startDownloadFile({ aid: aid, cid: cid, isByPRC: false });
+		}
+
+		// 事件绑定（body 上元素在 show() 时才生成，这里用事件委托避免重复绑定）
+		pageWrap.addEventListener('click', (e) => {
+			const span = e.target && e.target.closest ? e.target.closest('.board-item > span') : null;
+			if (!span) return;
+			span.style.backgroundColor = '#ccc';
+			downloadOne(span.getAttribute('data-aid'), span.getAttribute('data-cid'));
+		});
+		closeBtn.addEventListener('click', hide);
+
+		$('[name="selectall"]', body).addEventListener('click', () => {
+			$$('.page-wrap input[type="checkbox"]', body).forEach((c) => { c.checked = true; });
+		});
+		$('[name="removeSelect"]', body).addEventListener('click', () => {
+			$$('.page-wrap input[type="checkbox"]', body).forEach((c) => { c.checked = false; });
+		});
+
+		// 切换下载方式时，自动带出对应 RPC 地址
+		$$('input[name="downloadWay"]', body).forEach((radio) => {
+			radio.addEventListener('change', () => {
+				if (!radio.checked) return;
+				const isMotrix = radio.value === 'Motrix';
+				$('input[name="RPCURL"]', body).value = isMotrix
+					? 'ws://localhost:16800/jsonrpc'
+					: 'ws://localhost:6800/jsonrpc';
+			});
+		});
+
+		// 批量下载
+		$('[name="downloadAll"]', body).addEventListener('click', () => {
+			const rpcUrl = $('input[name="RPCURL"]', body).value;
+			const savePath = $('input[name="savePath"]', body).value;
+			const rpcToken = $('input[name="RPCToken"]', body).value || '';
+			const wayRadio = $('input[name="downloadWay"]:checked', body);
+			const downloadWay = wayRadio ? wayRadio.value : 'Motrix';
+
+			gmSet(DOWNLOAD_SETTING_KEY, { RPCURL: rpcUrl, savePath: savePath, RPCToken: rpcToken, downloadWay: downloadWay });
+
+			const checkedBoxes = $$('.page-wrap input[type="checkbox"]:checked', body);
+			if (!checkedBoxes.length) {
+				webToast({ message: '至少需要选中1P', background: '#FF4D40' });
+				return;
+			}
+			if (!savePath) {
+				webToast({ message: '保存路径不能为空', background: '#FF4D40' });
+				return;
+			}
+			if (!rpcUrl) {
+				webToast({ message: 'RPC地址不能为空', background: '#FF4D40' });
+				return;
+			}
+			checkedBoxes.forEach((box) => {
+				setTimeout(() => {
+					startDownloadFile({
+						aid: box.getAttribute('data-aid'),
+						cid: box.getAttribute('data-cid'),
+						fileName: box.getAttribute('title'),
+						isByPRC: true,
+						savePath: savePath,
+						RPCURL: rpcUrl,
+						RPCToken: rpcToken,
+					});
+				}, 1000);
+			});
+		});
+
+		return { mask: mask, body: body, show: show, hide: hide };
+	}
+
+	// 拉取分P信息（一次请求即可拿到 aid/pages/封面/标题）
+	function prepareDownloadPages() {
+		const bv = currentBv();
+		if (!bv) return Promise.resolve({ status: 'bv_null' });
+
+		return gmRequest('GET', VIEW_API + '?bvid=' + bv)
+			.then((text) => {
+				let json = null;
+				try { json = JSON.parse(text); } catch (_) { /* fallthrough */ }
+				if (!json || json.code !== 0 || !json.data) return { status: 'request_error' };
+
+				const data = json.data;
+				const aid = data.aid;
+				if (!aid) return { status: 'aid_null' };
+
+				const items = [];
+				// 合集/课程等多节结构
+				if (data.ugc_season && data.ugc_season.sections) {
+					data.ugc_season.sections.forEach((section) => {
+						if (!section.episodes) return;
+						section.episodes.forEach((episode) => {
+							let pageNo = 1;
+							(episode.pages || []).forEach((pageInfo) => {
+								items.push({
+									cover: '', page: pageNo, title: pageInfo.part,
+									cid: pageInfo.cid, aid: episode.aid || aid,
+								});
+								pageNo++;
+							});
+						});
+					});
+				} else if (data.pages) { // 普通多P
+					data.pages.forEach((pageData) => {
+						items.push({
+							cover: pageData.first_frame, page: pageData.page,
+							title: pageData.part, cid: pageData.cid, aid: aid,
+						});
+					});
+				}
+				return { status: 'success', downloadData: { items: items, pic: data.pic, title: data.title } };
+			})
+			.catch(() => ({ status: 'request_error' }));
+	}
+
+	// 获取播放地址并触发下载
+	function startDownloadFile(options) {
+		const { aid, cid } = options;
+		gmRequest('GET', PLAYURL_API + '?avid=' + aid + '&cid=' + cid + '&qn=112')
+			.then((text) => {
+				let json = null;
+				try { json = JSON.parse(text); } catch (_) { /* fallthrough */ }
+				if (json && json.code === 0 && json.data && json.data.durl && json.data.durl[0]) {
+					const fileName = cleanFileName(options.fileName);
+					const downloadUrl = json.data.durl[0].url;
+					if (options.isByPRC) {
+						rpcDownload({
+							fileName: fileName, url: downloadUrl,
+							savePath: options.savePath, RPCURL: options.RPCURL, RPCToken: options.RPCToken,
+						}).then(
+							(msg) => webToast({ message: msg, time: 3000 }),
+							(err) => webToast({ message: err, time: 3000, background: '#FF4D40' })
+						);
+					} else {
+						window.open(downloadUrl);
+					}
+				} else {
+					webToast({ message: '获取下载链接失败', background: '#FF4D40' });
+				}
+			})
+			.catch(() => webToast({ message: '获取下载链接失败', background: '#FF4D40' }));
+	}
+
+	// 通过 aria2 JSON-RPC(WebSocket) 推送下载任务
+	function rpcDownload(opts) {
+		const savePath = opts.savePath || 'D:/';
+		const rpcUrl = opts.RPCURL || 'ws://localhost:16800/jsonrpc';
+		return new Promise((resolve, reject) => {
+			let socket;
+			try {
+				socket = new WebSocket(rpcUrl);
+			} catch (_) {
+				reject('Aria2连接错误，请打开Aria2和检查RPC设置！');
+				return;
+			}
+			let settled = false;
+			const settle = (fn, val) => {
+				if (settled) return;
+				settled = true;
+				try { socket.close(); } catch (_) {}
+				fn(val);
+			};
+			const rpcMsg = {
+				jsonrpc: '2.0', id: 'huahuacat', method: 'aria2.addUri',
+				params: [[opts.url], {
+					dir: savePath,
+					'max-connection-per-server': '16',
+					header: ['User-Agent:' + navigator.userAgent, 'Cookie:' + document.cookie, 'Referer:' + window.location.href],
+				}],
+			};
+			if (opts.fileName) rpcMsg.params[1].out = opts.fileName;
+			if (opts.RPCToken) rpcMsg.params.unshift('token:' + opts.RPCToken);
+
+			socket.onerror = () => settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
+			socket.onclose = () => { if (!settled) settle(reject, 'Aria2连接已断开，请检查RPC设置！'); };
+			socket.onopen = () => {
+				try { socket.send(JSON.stringify(rpcMsg)); } catch (_) {
+					settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
+				}
+			};
+			socket.onmessage = (event) => {
+				let msg = null;
+				try { msg = JSON.parse(event.data); } catch (_) { return; }
+				if (msg && msg.method === 'aria2.onDownloadStart') {
+					settle(resolve, 'Aria2 开始下载【' + (opts.fileName || '') + '】');
+				} else if (msg && msg.id === 'huahuacat' && typeof msg.result === 'string') {
+					// 某些 aria2 配置不会推送 onDownloadStart，收到 addUri 响应也视为已受理
+					settle(resolve, 'Aria2 已接收下载任务【' + (opts.fileName || '') + '】');
+				}
+			};
+		});
+	}
+
+	// ---------------- 浏览记录提醒 ----------------
+	function initRecordView() {
+		const host = window.location.host;
+		const isVideoPage = host === 'www.bilibili.com' && window.location.pathname.indexOf('/video') !== -1;
+
+		// 浏览视频时记录 BV 号（保留最近约 4800 字符）
+		if (isVideoPage) {
+			let lastHref = '';
+			setInterval(() => {
+				if (window.location.href === lastHref) return;
+				lastHref = window.location.href;
+				const bv = currentBv();
+				if (!bv) return;
+				let cache = gmGet(RECORD_KEY, '') || '';
+				if (cache.length > 12 * 500) cache = cache.substring(12 * 100);
+				if (cache.indexOf(bv) === -1) {
+					cache += bv;
+					gmSet(RECORD_KEY, cache);
+				}
+			}, 500);
+		}
+
+		// 非视频详情页：搜索结果/用户主页提示“已看”
+		if (host.indexOf('bilibili.com') !== -1) {
+			const targets = [
+				{ node: '.bili-video-card', top: 8, right: 12 },          // 搜索结果
+				{ node: '#page-index .small-item', top: 12, right: 12 },  // 用户投稿
+				{ node: '#submit-video-list .small-item', top: 12, right: 12 }, // 用户主页
+				{ node: '#page-series-detail .small-item.fakeDanmu-item', top: 12, right: 12 },
+			];
+
+			function markAsSeen(ele, top, right) {
+				if (ele.querySelector('div[name="marklooked"]')) return;
+				ele.style.position = 'relative';
+				const badge = document.createElement('div');
+				badge.setAttribute('name', 'marklooked');
+				badge.textContent = '已看';
+				badge.style.cssText = 'z-index:100;position:absolute;top:' + top + 'px;right:' + right +
+					'px;background-color:rgba(251,123,159,1);border-radius:3px;font-size:10px;color:#FFF;padding:0 2px;';
+				ele.appendChild(badge);
+			}
+
+			function scan() {
+				const cache = gmGet(RECORD_KEY, '') || '';
+				targets.forEach((t) => {
+					$$(t.node).forEach((ele) => {
+						if (ele.getAttribute('dealxll') === 'true') return;
+						const link = ele.querySelector('a[href^="//www.bilibili.com/video"], a[href^="https://www.bilibili.com/video"]');
+						const href = link ? link.getAttribute('href') : null;
+						if (!href) return;
+						const bvs = href.match(/(\/BV(.*?)\/)/g);
+						if (!bvs || bvs.length !== 1) return;
+						const bv = bvs[0].replace(/\//g, '');
+						ele.addEventListener('click', () => markAsSeen(ele, t.top, t.right));
+						if (cache.indexOf(bv) !== -1) markAsSeen(ele, t.top, t.right);
+						ele.setAttribute('dealxll', 'true');
+					});
+				});
+			}
+			setInterval(scan, 500);
+			GM_registerMenuCommand('清空B站浏览记录', () => {
+				if (confirm('是否要清空B站浏览记录？清空后将不可恢复...')) {
+					gmSet(RECORD_KEY, '');
+					// 清除页面上已显示的角标
+					$$('div[name="marklooked"]').forEach((b) => {
+						if (b.parentNode) b.parentNode.removeChild(b);
+					});
+				}
+			});
+		}
+	}
+
+	// ---------------- 视频简介网址转链接 ----------------
+	const URL_REG = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?/g;
+	function linkify(root) {
+		if (!root) return;
+		const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+		const textNodes = [];
+		while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+		textNodes.forEach((tn) => {
+			const value = tn.nodeValue;
+			if (!value) return;
+			// 不处理 <a> 内部文本以及我们已经转过的节点，避免死循环/重复转换
+			const parent = tn.parentElement;
+			if (!parent || parent.tagName === 'A' || parent.closest('[data-shx-linkified]')) return;
+
+			URL_REG.lastIndex = 0;
+			let last = 0;
+			let m;
+			let made = false;
+			const frag = document.createDocumentFragment();
+			while ((m = URL_REG.exec(value)) !== null) {
+				const matched = m[0];
+				if (last < m.index) frag.appendChild(document.createTextNode(value.slice(last, m.index)));
+				const isBili = matched.indexOf('bilibili.com') !== -1;
+				const el = document.createElement(isBili ? 'span' : 'a');
+				if (!isBili) {
+					el.setAttribute('href', matched);
+					el.setAttribute('target', '_blank');
+					el.style.color = '#00AEEC';
+				}
+				el.textContent = matched;
+				el.setAttribute('data-shx-linkified', '1');
+				frag.appendChild(el);
+				made = true;
+				last = URL_REG.lastIndex;
+			}
+			if (!made) return;
+			if (last < value.length) frag.appendChild(document.createTextNode(value.slice(last)));
+			parent.replaceChild(frag, tn);
+		});
+	}
+
+	function initTextToLink() {
+		const root = $('#v_desc');
+		if (!root) return;
+		linkify(root);
+
+		const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+		if (!MutationObserver) return;
+		const observer = new MutationObserver(() => linkify(root));
+		observer.observe(root, { characterData: true, childList: true });
+	}
+
+	// ============================================================
+	// 服务器厂商页面导航条
+	// ============================================================
+	const SERVER_NAV_KEY = 'server_navigation_key';
+	const SERVER_HOSTS = ['tencent.com', 'aliyun.com', 'huaweicloud.com', 'bandwagonhost.com', 'hostwinds.com'];
+	// 服务器导航面板容器高 150px，初始隐藏在屏幕下方
+	const SERVER_CSS = (number) => `
+		#server-containerx${number}{
+			position:fixed; left:50%; bottom:-150px; transform:translateX(-50%);
+			width:60% !important; max-width:700px !important; height:150px !important;
+			background:#fafafa; box-shadow:rgba(0,0,0,.2) 0 -1px 5px -1px, rgba(0,0,0,.1) 0 1px 2px -1px;
+			z-index:2147483647; box-sizing:border-box; overflow:visible;
+			transition-duration:.8s; -webkit-transition-duration:.8s;
+		}
+		#server-containerx${number}:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+		#server-container-decoration${number}{
+			height:5px; background-color:#e4eaf6; position:relative; z-index:1;
+			box-shadow:rgba(0,0,0,.2) 0 -1px 5px -1px, rgba(0,0,0,.1) 0 1px 2px -1px;
+		}
+		#server-container-expand${number}{
+			cursor:pointer; position:absolute; width:50px; height:30px; background-color:#e4eaf6;
+			top:-30px; left:50%; transform:translateX(-50%); border-radius:5px 5px 0 0;
+			text-align:center; font-size:16px; line-height:30px; color:#6b7c93; user-select:none;
+		}
+		#server-container-expand${number}:hover{transition:.6s; transform:translateX(-50%) scale(1.05)}
+		.server-container-column9980x{position:relative}
+		.server-container-column9980x:not(:last-child):after{
+			position:absolute; height:calc(100% - 4em); right:0; content:''; width:0;
+			border-left:solid #e6e7eb 2px; top:50%; transform:translateY(-50%);
+		}
+		#server-container-body${number}{width:100%;height:100%;overflow:auto}
+		#server-containerx${number} a{color:#4766f4;text-decoration:none}
+	`;
+
+	function startServerNavigation() {
+		const host = window.location.host;
+		if (!SERVER_HOSTS.some((h) => host.indexOf(h) !== -1)) return;
+
+		GM_registerMenuCommand('服务器导航设置', () => {
+			const isOpen = gmGet(SERVER_NAV_KEY, true);
+			const person = prompt('是否开启服务器导航功能？请填写yes或者no....', isOpen ? 'yes' : 'no');
+			if (person === null) return;
+			const value = person === 'yes' || person === 'YES';
+			const valid = person === 'no' || person === 'NO' || value;
+			if (valid) gmSet(SERVER_NAV_KEY, value);
+			webToast({ message: valid ? (value ? '开启服务器导航功能' : '关闭服务器导航功能') : '参数错误，只能填写yes或者no', background: '#474747' });
+			if (valid) setTimeout(() => { try { location.reload(); } catch (_) {} }, 1000);
+		});
+
+		if (!gmGet(SERVER_NAV_KEY, true)) return;
+
+		const number = rid();
+		const container = document.createElement('div');
+		container.id = 'server-containerx' + number;
+		container.innerHTML = `
+			<div id="server-container-decoration${number}">
+				<div id="server-container-expand${number}">▲</div>
+			</div>
+			<div id="server-container-body${number}"></div>`;
+		document.body.appendChild(container);
+		addStyle(SERVER_CSS(number));
+
+		const bodyBox = $('#server-container-body' + number);
+		const expandBtn = $('#server-container-expand' + number);
+
+		const expandOrShow = (forceClose) => {
+			const cs = window.getComputedStyle(container);
+			const shown = cs.bottom === '0px';
+			container.style.bottom = (shown || forceClose) ? '-' + (cs.height || 150) : '0px';
+		};
+		expandBtn.addEventListener('click', () => expandOrShow(false));
+
+		// 拉取导航内容
+		const api = 'https://server.staticj.top/api/server/discover?url=' + encodeURIComponent(window.location.href) + '&no=1';
+		gmRequest('GET', api)
+			.then((text) => {
+				const data = JSON.parse(text).data;
+				if (!data) return;
+				bodyBox.innerHTML = data.html || '';
+				// 向下滚动超过 30px 时收起导航
+				let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				setTimeout(() => {
+					window.addEventListener('scroll', () => {
+						const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+						if (scrollTop - lastScrollTop > 30) expandOrShow(true);
+						lastScrollTop = scrollTop;
+					});
+				}, 1500);
+				// 给相关站内锚点补充来源参数
+				anchorTrack(data.track);
+			})
+			.catch(() => { /* 服务不可用时静默 */ });
+	}
+
+	// 给符合关键词的站内链接追加来源参数，避免被统计代码拦截
+	function anchorTrack(track) {
+		if (!track) return;
+		const pathname = window.location.pathname;
+		if (['/', '/product', '/product/list'].indexOf(pathname) === -1) return;
+
+		const keywordText = decodeURIComponent(
+			'%E5%AE%89%E5%85%A8%7C%E8%AF%86%E5%88%AB%7C%E6%A8%A1%E5%9E%8B%7C%E5%AE%A1%E6%A0%B8%7C%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%7CAI%7C%E6%9C%8D%E5%8A%A1%E5%99%A8%7C%E4%B8%BB%E6%9C%BA%7C%E6%B4%BB%E5%8A%A8%7C%E6%96%87%E6%9C%AC%7C%E6%96%87%E5%AD%97%7C%E8%AF%AD%E8%A8%80%7C%E5%9B%BE%E5%83%8F%7C%E5%9B%BE%E7%89%87%7C%E8%A7%86%E9%A2%91%7C%E5%9F%9F%E5%90%8D%7C%E7%9F%AD%E4%BF%A1'
+		);
+		const keywords = keywordText.split('|');
+
+		const scan = () => {
+			$$('a').forEach((a) => {
+				const href = a.getAttribute('href');
+				if (!href || (a.getAttribute('anchor-i') && a.getAttribute('anchor-i-url') === href)) return;
+				let text = '';
+				a.childNodes.forEach((node) => {
+					if (node.nodeType === 3 || (node.nodeType === 1 && node.tagName !== 'A')) text += node.textContent;
+				});
+				text = text.replace(/\n|\t|\s/g, '');
+				if (!keywords.some((k) => text.indexOf(k) !== -1)) return;
+				if (href.indexOf(track) !== -1) return;
+
+				a.setAttribute('anchor-i', 'true');
+				a.setAttribute('anchor-i-url', href);
+				a.setAttribute('rel', 'noreferrer nofollow');
+				a.removeAttribute('data-spm');
+				a.removeAttribute('data-spm-anchor-id');
+				a.removeAttribute('data-tracker-scm');
+				const sep = href.indexOf('?') !== -1 ? '&' : '?';
+				a.setAttribute('href', href + sep + track);
+				a.setAttribute('anchor-i-url', href + sep + track);
+			});
+		};
+		scan();
+		setInterval(scan, 1000);
+	}
+
+	// ============================================================
+	// 启动
+	// ============================================================
+	if (isPC()) {
+		GM_registerMenuCommand('功能开关', usersSeting);
+	} else {
+		settings.bilibiliHelper = false;
+	}
+
+	if (settings.bilibiliHelper) {
+		startBilibiliHelper();
+	}
+	startServerNavigation();
+})();
