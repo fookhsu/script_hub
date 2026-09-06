@@ -18,7 +18,7 @@
 // @grant           GM_xmlhttpRequest
 // @grant           GM.xmlHttpRequest
 // @grant           GM_registerMenuCommand
-// @license         AGPL License
+// @license         AGPL-3.0-or-later
 // @charset         UTF-8
 // @run-at          document-idle
 // ==/UserScript==
