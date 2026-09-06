@@ -11,7 +11,7 @@ script_hub/
 ├── README.md                  # 本说明
 └── <脚本名>/                  # 例如 bili_download/
     ├── README.md              # 功能说明 + 安装/测试方法（务必维护）
-    ├── package.json           # npm test / test:optimized 等测试命令入口
+    ├── package.json           # npm test 等测试命令入口
     ├── <脚本>.user.js         # 脚本源码（部署用）
     └── test/
         ├── package.json       # 测试依赖声明

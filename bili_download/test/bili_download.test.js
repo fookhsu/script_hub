@@ -3,8 +3,8 @@
  * Integration tests for the bilibili userscript (bili_download.js).
  *
  * Usage:
- *   node test/bili_download.test.js                 # run against bili_download.js
- *   SCRIPT_PATH=../bili_download.optimized.js node test/bili_download.test.js
+ *   node test/bili_download.test.js                 # 默认跑 bili_download.js
+ *   SCRIPT_PATH=./bili_download.js node test/bili_download.test.js
  */
 const fs = require('fs');
 const path = require('path');

@@ -9,8 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
-// 默认目标：优化版（部署版）。想测原版用 SCRIPT_PATH=./bili_download.js
-const SCRIPT_PATH = process.env.SCRIPT_PATH || path.join(__dirname, '..', 'bili_download.optimized.js');
+// 被测脚本默认即仓库内唯一一份：bili_download.js；可用 SCRIPT_PATH 覆盖
+const SCRIPT_PATH = process.env.SCRIPT_PATH || path.join(__dirname, '..', 'bili_download.js');
 const JQUERY_SRC = fs.readFileSync(path.join(__dirname, 'node_modules', 'jquery', 'dist', 'jquery.js'), 'utf8');
 
 // ---------------------------------------------------------------------------
@@ -181,9 +181,9 @@ function makeSandbox(options = {}) {
   installFindAndReplaceDOMText(window);
   const gm = installGmMocks(window, seedValues, router);
 
-  // jQuery (original script relies on it; optimized version simply ignores it).
-  // Set NO_JQUERY=1 to prove a script has no jQuery dependency.
-  // Evaluate the UMD build inside the window so it binds to this jsdom document.
+  // jQuery：仅当被测脚本依赖它时才需要注入。当前脚本为原生 DOM 实现，
+  // 设置 NO_JQUERY=1 可验证其确无 jQuery 依赖。
+  // 在 window 内执行 UMD 构建，使其绑定到本 jsdom 文档。
   if (process.env.NO_JQUERY !== '1') {
     window.eval(JQUERY_SRC);
     if (!window.$) throw new Error('failed to bootstrap jQuery in sandbox');

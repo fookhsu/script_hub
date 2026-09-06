@@ -1,63 +1,35 @@
 // ==UserScript==
-// @name              B站哔哩哔哩下载增强
-// @name:zh           B站哔哩哔哩下载增强
-// @name:zh-TW		  B站嗶哩嗶哩下载增強
-// @namespace         bilibili_namespace_20230625
-// @version           2.4.0
-// @description       功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
-// @description:zh    功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
-// @description:zh-TW 功能可選擇性開啟：1、B站使用增強：支援視頻下載(👉支援多P批量快速下載👈)、瀏覽記錄提示、一鍵三連、自動簽到、描述文本網址轉連結等；
-// @author            fookhsu
+// @name            B站哔哩哔哩下载增强
+// @name:zh         B站哔哩哔哩下载增强
+// @namespace       bilibili_namespace_20230625
+// @version         2.4.0
+// @description     功能开关可选（油猴菜单 → 功能开关）。B站使用增强：视频下载——普通多P与合集批量下载，合集支持「按集/全部P」切换并一键定位下载当前集，可推送 aria2/Motrix/AriaNgGUI；另含一键三连、浏览记录“已看”提示、视频简介网址自动转链接。
+// @author          fookhsu
 // @icon              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACS0lEQVRYR8WXz2oTURTGv3MnpqhNKy1UWmxRTGdaiLSQRKkKIoK4FVrRPoHu7BMYn0B3+gQquuiuiC6kaFVsAhGEZkKqG/+Vrtp0YWsyR27KlEwz0xnnT3LgwjB37vl+97tzz9whdDiow/pwBCjofN0AJohwKQgkMxYF8Dmt0bxdnhaAQoWTXMczENJBhFvGMgqk4GY6SZXmPgvAmy/cnYijGqrwvmTVHSQup2jLvG0ByJf5EYDbUQIAeJxR6U4LQHGV1VodesTijfQxBdrkaSrL6z0Hlst8i4An7QBgYDar0lMrgM45ItxrCwDjflajnC+AtR8Gvn8zGpz9xwVOjor/Zma/ANt/GIsLNWxt8p7o4IiAmlLQP+C9pvkG+FoyUPxYs52xhFDPKIh3uRviG2ClWIdsTpHoJYymFNdliQzABBsaEZg4p+DwUftliRxAggwOC0xdidma1RaAI92Ea9OHOgcwPqlANruI1AElhsa2dBKXQJEBnDglGlvxWN/BNcE3gKyCS69b64AUlMISwEv4BpDJ3778i/Xfu5XQtFtaLq+9RiCA6gZj/dcuQN8Audod6kvodYZuz9k7UOK7JPDAbXAY/WxgLjtGDy2f408VPi8MLIUh4JbDELhwNknvLQDyQNoTh87AkFuCIP0E/NzcgWYeTC0bdrkNp6Lm9bc4YM4qr/NzEGaCzNJxLONFRqMbzf22JSu/wlcphhwzpsIAIcIHriGXGadX+/MdWDPflTjRxcH+kLYJhYtj5Piz4/0gF4YVNjk6DvAPDb0aMEr8/nEAAAAASUVORK5CYII=
-// @include	   	      *://www.bilibili.com/**
-// @include           *://search.bilibili.com/**
-// @include           *://space.bilibili.com/**
-// @include           *://www.bilibili.com/read/**
-// @exclude           *://cloud.tencent.com/login*
-// @exclude           *://console.cloud.tencent.com/*
-// @exclude           *://market.cloud.tencent.com/*
-// @exclude           *://www.aliyun.com/smarter-engine/*
-// @exclude           *://account.aliyun.com/*
-// @exclude           *://developer.aliyun.com/*
-// @exclude           *://promotion.aliyun.com/*
-// @exclude           *://free.aliyun.com/*
-// @exclude           *://summit.aliyun.com/*
-// @exclude           *://startup.aliyun.com/*
-// @exclude           *://university.aliyun.com/*
-// @exclude           *://careers.aliyun.com/*
-// @exclude           *://market.aliyun.com/*
-// @exclude           *://yunqi.aliyun.com/*
-// @exclude           *://help.aliyun.com/*
-// @exclude           *://g.alicdn.com/*
-// @exclude           *://passport.aliyun.com/*
-// @exclude           *://*.console.aliyun.com/*
-// @exclude           *://auth.huaweicloud.com/*
-// @exclude           *://support.huaweicloud.com/*
-// @exclude           *://console.huaweicloud.com/*
-// @exclude           *://accounts.youtube.com/*
-// @exclude           *://www.youtube.com/live_chat_replay*
-// @exclude           *://www.youtube.com/persist_identity*
-// @connect           bilibili.com
-// @connect           staticj.top
-// @grant             GM_getValue
-// @grant             GM.getValue
-// @grant             GM_setValue
-// @grant             GM.setValue
-// @grant             GM_xmlhttpRequest
-// @grant             GM.xmlHttpRequest
-// @grant             GM_registerMenuCommand
-// @license           AGPL License
-// @charset		      UTF-8
-// @run-at            document-idle
+// @include         *://www.bilibili.com/**
+// @include         *://search.bilibili.com/**
+// @include         *://space.bilibili.com/**
+// @connect         bilibili.com
+// @connect         staticj.top
+// @grant           GM_getValue
+// @grant           GM.getValue
+// @grant           GM_setValue
+// @grant           GM.setValue
+// @grant           GM_xmlhttpRequest
+// @grant           GM.xmlHttpRequest
+// @grant           GM_registerMenuCommand
+// @license         AGPL License
+// @charset         UTF-8
+// @run-at          document-idle
 // ==/UserScript==
 /**
- * 脚本遵循 AGPL License 开源协议；在协议允许的范围内可以自由修改。
- * 本文件为 bili_download.js 的优化重构版：
- *   1. 去掉 jQuery / findAndReplaceDOMText 两个 CDN 依赖，全部改用原生 DOM；
- *   2. 分P信息改为一次 API 请求获取（原来是 bvid、aid 各请求一次）；
- *   3. 清理未使用的死代码与重复实现的 GM 包装；
- *   4. 修复若干问题：单选框用 prop 选中、简介转链接的无限循环隐患、
- *      toast.show 未定义、dialog 关闭异常等。
+ * B站哔哩哔哩下载增强（Tampermonkey / Violentmonkey 油猴脚本）。
+ * - 不依赖 jQuery 等第三方 DOM 库，全部使用原生 DOM；
+ * - 分P信息只需一次 API 请求获取；
+ * - 普通视频支持多P列表下载；合集(ugc_season)支持「按集 / 全部P」两种范围，
+ *   每集多分P时整集勾选自动展开，集数很多时可一键定位“下载当前集”；
+ * - 批量下载通过 aria2 JSON-RPC(WebSocket) 推送到 Motrix / AriaNgGUI；
+ * - 遵循 AGPL License，仅用于个人学习交流，请注意版权。
  */
 (function () {
 	'use strict';
