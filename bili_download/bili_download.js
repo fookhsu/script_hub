@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name              B站哔哩哔哩使用增强
-// @name:zh           B站哔哩哔哩使用增强
-// @name:zh-TW		  B站嗶哩嗶哩使用增強
+// @name              B站哔哩哔哩下载增强
+// @name:zh           B站哔哩哔哩下载增强
+// @name:zh-TW		  B站嗶哩嗶哩下载增強
 // @namespace         bilibili_namespace_20230625
-// @version           2.1.10
+// @version           2.4.0
 // @description       功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
 // @description:zh    功能可选择性打开：1、B站使用增强：支持视频下载(👉支持多P批量快速下载👈)、浏览记录提示、一键三连、自动签到、描述文本网址转链接等；
 // @description:zh-TW 功能可選擇性開啟：1、B站使用增強：支援視頻下載(👉支援多P批量快速下載👈)、瀏覽記錄提示、一鍵三連、自動簽到、描述文本網址轉連結等；
-// @author            huahuacat
+// @author            fookhsu
 // @icon              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACS0lEQVRYR8WXz2oTURTGv3MnpqhNKy1UWmxRTGdaiLSQRKkKIoK4FVrRPoHu7BMYn0B3+gQquuiuiC6kaFVsAhGEZkKqG/+Vrtp0YWsyR27KlEwz0xnnT3LgwjB37vl+97tzz9whdDiow/pwBCjofN0AJohwKQgkMxYF8Dmt0bxdnhaAQoWTXMczENJBhFvGMgqk4GY6SZXmPgvAmy/cnYijGqrwvmTVHSQup2jLvG0ByJf5EYDbUQIAeJxR6U4LQHGV1VodesTijfQxBdrkaSrL6z0Hlst8i4An7QBgYDar0lMrgM45ItxrCwDjflajnC+AtR8Gvn8zGpz9xwVOjor/Zma/ANt/GIsLNWxt8p7o4IiAmlLQP+C9pvkG+FoyUPxYs52xhFDPKIh3uRviG2ClWIdsTpHoJYymFNdliQzABBsaEZg4p+DwUftliRxAggwOC0xdidma1RaAI92Ea9OHOgcwPqlANruI1AElhsa2dBKXQJEBnDglGlvxWN/BNcE3gKyCS69b64AUlMISwEv4BpDJ3778i/Xfu5XQtFtaLq+9RiCA6gZj/dcuQN8Audod6kvodYZuz9k7UOK7JPDAbXAY/WxgLjtGDy2f408VPi8MLIUh4JbDELhwNknvLQDyQNoTh87AkFuCIP0E/NzcgWYeTC0bdrkNp6Lm9bc4YM4qr/NzEGaCzNJxLONFRqMbzf22JSu/wlcphhwzpsIAIcIHriGXGadX+/MdWDPflTjRxcH+kLYJhYtj5Piz4/0gF4YVNjk6DvAPDb0aMEr8/nEAAAAASUVORK5CYII=
 // @include	   	      *://www.bilibili.com/**
 // @include           *://search.bilibili.com/**
@@ -37,1626 +37,1222 @@
 // @exclude           *://accounts.youtube.com/*
 // @exclude           *://www.youtube.com/live_chat_replay*
 // @exclude           *://www.youtube.com/persist_identity*
-// @require           https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.2.1/jquery.min.js
-// @require           https://greasyfork.org/scripts/454236-findandreplacedomtext-huahuacat/code/findAndReplaceDOMText-huahuacat.js?version=1112990
 // @connect           bilibili.com
-// @connect           tikdownloader.io
 // @connect           staticj.top
-// @grant             unsafeWindow
-// @grant             GM_openInTab
-// @grant             GM.openInTab
 // @grant             GM_getValue
 // @grant             GM.getValue
 // @grant             GM_setValue
 // @grant             GM.setValue
-// @grant             GM_download
 // @grant             GM_xmlhttpRequest
 // @grant             GM.xmlHttpRequest
-// @grant             GM_addStyle
 // @grant             GM_registerMenuCommand
 // @license           AGPL License
 // @charset		      UTF-8
 // @run-at            document-idle
-// @downloadURL https://update.greasyfork.org/scripts/469407/B%E7%AB%99%E5%93%94%E5%93%A9%E5%93%94%E5%93%A9%E4%BD%BF%E7%94%A8%E5%A2%9E%E5%BC%BA%EF%BC%8C%E5%85%A8%E7%BD%91VIP%E8%A7%86%E9%A2%91%E5%85%8D%E8%B4%B9%E7%A0%B4%E8%A7%A3%E5%8E%BB%E5%B9%BF%E5%91%8A%EF%BC%8C%E7%9F%A5%E4%B9%8E%E4%BD%BF%E7%94%A8%E5%A2%9E%E5%BC%BA%EF%BC%8C%E7%9F%AD%E8%A7%86%E9%A2%91%E6%97%A0%E6%B0%B4%E5%8D%B0%E4%B8%8B%E8%BD%BD%EF%BC%8C%E6%B2%B9%E7%AE%A1%E3%80%81Facebook%E7%AD%89%E5%9B%BD%E5%A4%96%E8%A7%86%E9%A2%91%E8%A7%A3%E6%9E%90%E4%B8%8B%E8%BD%BD%E7%AD%89%F0%9F%98%88.user.js
-// @updateURL https://update.greasyfork.org/scripts/469407/B%E7%AB%99%E5%93%94%E5%93%A9%E5%93%94%E5%93%A9%E4%BD%BF%E7%94%A8%E5%A2%9E%E5%BC%BA%EF%BC%8C%E5%85%A8%E7%BD%91VIP%E8%A7%86%E9%A2%91%E5%85%8D%E8%B4%B9%E7%A0%B4%E8%A7%A3%E5%8E%BB%E5%B9%BF%E5%91%8A%EF%BC%8C%E7%9F%A5%E4%B9%8E%E4%BD%BF%E7%94%A8%E5%A2%9E%E5%BC%BA%EF%BC%8C%E7%9F%AD%E8%A7%86%E9%A2%91%E6%97%A0%E6%B0%B4%E5%8D%B0%E4%B8%8B%E8%BD%BD%EF%BC%8C%E6%B2%B9%E7%AE%A1%E3%80%81Facebook%E7%AD%89%E5%9B%BD%E5%A4%96%E8%A7%86%E9%A2%91%E8%A7%A3%E6%9E%90%E4%B8%8B%E8%BD%BD%E7%AD%89%F0%9F%98%88.meta.js
 // ==/UserScript==
+/**
+ * 脚本遵循 AGPL License 开源协议；在协议允许的范围内可以自由修改。
+ * 本文件为 bili_download.js 的优化重构版：
+ *   1. 去掉 jQuery / findAndReplaceDOMText 两个 CDN 依赖，全部改用原生 DOM；
+ *   2. 分P信息改为一次 API 请求获取（原来是 bvid、aid 各请求一次）；
+ *   3. 清理未使用的死代码与重复实现的 GM 包装；
+ *   4. 修复若干问题：单选框用 prop 选中、简介转链接的无限循环隐患、
+ *      toast.show 未定义、dialog 关闭异常等。
+ */
 (function () {
 	'use strict';
-	/**
- * 脚本遵循AGPL License开源协议；在协议允许的范围类，可以自由修改
- * 开完万岁！！
- */
-	//共有方法，全局共享
-function CommonFunction(){
-	this.GMgetValue = function (name, value=null) {
-		let storageValue = value;
-		if (typeof GM_getValue === "function") {
-			storageValue = GM_getValue(name, value);
-		} else if(typeof GM.setValue === "function"){
-			storageValue = GM.getValue(name, value);
-		}else{
-			var arr = window.localStorage.getItem(name);
-			if(arr != null){
-				storageValue = arr
-			}
+
+	// ============================================================
+	// 通用小工具
+	// ============================================================
+	const $ = (sel, root) => (root || document).querySelector(sel);
+	const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+
+	// 随机后缀，避免与页面内其它元素冲突
+	const rid = () => Math.ceil(Math.random() * 100000000);
+
+	// 兼容 GM_* 同步 API 与 GM.* 异步 API、以及无 GM 环境下的 localStorage
+	function gmGet(name, def) {
+		if (typeof GM_getValue === 'function') return GM_getValue(name, def);
+		if (typeof GM !== 'undefined' && typeof GM.getValue === 'function') {
+			let v = def;
+			GM.getValue(name, def).then((val) => { v = val; });
+			return v;
 		}
-		return storageValue;
-	};
-	this.GMsetValue = function(name, value){
-		if (typeof GM_setValue === "function") {
-			GM_setValue(name, value);
-		} else if(typeof GM.setValue === "function"){
-			GM.setValue(name, value);
-		}else{
-			window.localStorage.setItem(name, value)
-		}
-	};
-	this.GMaddStyle = function(css){
-		var myStyle = document.createElement('style');
-		myStyle.textContent = css;
-		var doc = document.head || document.documentElement;
-		doc.appendChild(myStyle);
-	};
-	this.GMopenInTab = function(url, options={"active":true, "insert":true, "setParent":true}){
-		if (typeof GM_openInTab === "function") {
-			GM_openInTab(url, options);
-		} else {
-			GM.openInTab(url, options);
-		}
-	};
-	this.addScript = function(url){
-		var s = document.createElement('script');
-		s.setAttribute('src',url);
-		document.body.appendChild(s);
-	};
-	this.randomNumber = function(){
-		return Math.ceil(Math.random()*100000000);
-	};
-	this.request=function(method, url, param, headers={"Content-Type": "application/json;charset=UTF-8"}){
-		return new Promise(function(resolve, reject){
+		const val = localStorage.getItem(name);
+		return val === null ? def : val;
+	}
+	function gmSet(name, value) {
+		if (typeof GM_setValue === 'function') return GM_setValue(name, value);
+		if (typeof GM !== 'undefined' && typeof GM.setValue === 'function') return GM.setValue(name, value);
+		return localStorage.setItem(name, value);
+	}
+
+	// 往 <head> 注入样式
+	function addStyle(css) {
+		const styleEl = document.createElement('style');
+		styleEl.textContent = css;
+		(document.head || document.documentElement).appendChild(styleEl);
+		return styleEl;
+	}
+
+	// 网络请求（GET/POST 文本）
+	function gmRequest(method, url, data) {
+		return new Promise((resolve, reject) => {
 			GM_xmlhttpRequest({
+				method: method || 'GET',
 				url: url,
-				method: method,
-				data:param,
-				headers:headers,
-				onload: function(response) {
-					var status = response.status;
-					var playurl = "";
-					if(status==200||status=='200'){
-						var responseText = response.responseText;
-						resolve({"result":"success", "data":responseText});
-					}else{
-						reject({"result":"error", "data":null});
-					}
-				}
-			});
-		})
-	};
-	this.crossRequest=function(method, url, param){
-		if(!method){
-			method = "get";
-		}
-		if(!url){
-			return new Promise(function(resolve, reject){
-				reject({"result":"error", "data":null});
-			});
-		}
-		if(!param){
-			param = {};
-		}
-		method = method.toUpperCase();
-	    let config = {
-	        method: method
-	    };
-	    if (method === 'POST') {
-	        config.headers['Content-Type'] = 'application/json';
-	        config.body = JSON.stringify(param);
-	    }
-		return new Promise(function(resolve, reject){
-			fetch(url, config).then(response => response.text()).then(text => {
-				resolve({"result":"success", "data":text});
-			}).catch(error => {
-				reject({"result":"error", "data":null});
+				data: data,
+				onload: (res) => {
+					if (res.status === 200 || res.status === '200') resolve(res.responseText);
+					else reject(new Error('http status ' + res.status));
+				},
+				onerror: () => reject(new Error('network error')),
 			});
 		});
-	};
-	this.addCommonHtmlCss = function(){
-		var cssText =
-			`
-			@keyframes fadeIn {
-				0%    {opacity: 0}
-				100%  {opacity: 1}
-			}
-			@-webkit-keyframes fadeIn {
-				0%    {opacity: 0}
-				100%  {opacity: 1}
-			}
-			@-moz-keyframes fadeIn {
-				0%    {opacity: 0}
-				100%  {opacity: 1}
-			}
-			@-o-keyframes fadeIn {
-				0%    {opacity: 0}
-				100%  {opacity: 1}
-			}
-			@-ms-keyframes fadeIn {
-				0%    {opacity: 0}
-				100%  {opacity: 1}
-			}
-			@keyframes fadeOut {
-				0%    {opacity: 1}
-				100%  {opacity: 0}
-			}
-			@-webkit-keyframes fadeOut {
-				0%    {opacity: 1}
-				100%  {opacity: 0}
-			}
-			@-moz-keyframes fadeOut {
-				0%    {opacity: 1}
-				100%  {opacity: 0}
-			}
-			@-o-keyframes fadeOut {
-				0%    {opacity: 1}
-				100%  {opacity: 0}
-			}
-			@-ms-keyframes fadeOut {
-				0%    {opacity: 1}
-				100%  {opacity: 0}
-			}
-			.web-toast-kkli9{
-				position: fixed;
-				background: rgba(0, 0, 0, 0.7);
-				color: #fff;
-				font-size: 14px;
-				line-height: 1;
-				padding:10px;
-				border-radius: 3px;
-				left: 50%;
-				transform: translateX(-50%);
-				-webkit-transform: translateX(-50%);
-				-moz-transform: translateX(-50%);
-				-o-transform: translateX(-50%);
-				-ms-transform: translateX(-50%);
-				z-index: 999999999999999999999999999;
-				white-space: nowrap;
-			}
-			.fadeOut{
-				animation: fadeOut .5s;
-			}
-			.fadeIn{
-				animation:fadeIn .5s;
-			}
-			`;
-		this.GMaddStyle(cssText);
-	};
-	this.webToast = function(params) {	//小提示框
-		var time = params.time;
-		var background = params.background;
-		var color = params.color;
-		var position = params.position;  //center-top, center-bottom
-		var defaultMarginValue = 50;
+	}
 
-		if(time == undefined || time == ''){
-			time = 1500;
+	function isPC() {
+		return !/Android|iPhone|SymbianOS|Windows Phone|iPad|iPod/i.test(navigator.userAgent);
+	}
+	function getSystemOS() {
+		const u = navigator.userAgent;
+		if (/Windows/i.test(u)) return 'windows';
+		if (/Macintosh|MacIntel/i.test(u)) return 'macOS';
+		if (/iPhone|iPad/i.test(u)) return 'ios';
+		if (/Android/i.test(u)) return 'android';
+		return 'other';
+	}
+	// 从当前路径解析 BV 号（兼容稍后再看页）
+	function currentBv() {
+		const pathname = window.location.pathname;
+		if (pathname.indexOf('/medialist/play/watchlater/') !== -1) {
+			return pathname.replace('/medialist/play/watchlater/', '').split('/')[0] || '';
 		}
+		const m = pathname.match(/\/video\/(BV[0-9A-Za-z]+)/);
+		return m ? m[1] : '';
+	}
 
-		var el = document.createElement("div");
-		el.setAttribute("class", "web-toast-kkli9");
-		el.innerHTML = params.message;
-		//背景颜色
-		if(background!=undefined && background!=''){
-			el.style.backgroundColor=background;
+	// 小提示框（原 webToast）：动画结束后必定移除元素，避免残留
+	let toastCssInjected = false;
+	function webToast(params) {
+		if (!toastCssInjected) {
+			toastCssInjected = true;
+			addStyle(`
+				@keyframes shx-fade-in{0%{opacity:0}100%{opacity:1}}
+				@keyframes shx-fade-out{0%{opacity:1}100%{opacity:0}}
+				.web-toast-kkli9{
+					position:fixed; background:rgba(0,0,0,.7); color:#fff;
+					font-size:14px; line-height:1; padding:10px; border-radius:3px;
+					left:50%; transform:translateX(-50%);
+					z-index:999999999; white-space:nowrap;
+				}
+				.web-toast-kkli9.shx-in{animation:shx-fade-in .5s}
+				.web-toast-kkli9.shx-out{animation:shx-fade-out .5s}
+			`);
 		}
-		//字体颜色
-		if(color!=undefined && color!=''){
-			el.style.color=color;
-		}
-
-		//显示位置
-		if(position==undefined || position==''){
-			position = "center-bottom";
-		}
-
-		//设置显示位置，当前有种两种形式
-		if(position==="center-bottom"){
-			el.style.bottom = defaultMarginValue+"px";
-		}else{
-			el.style.top = defaultMarginValue+"px";
-		}
-		el.style.zIndex=999999;
-
+		const el = document.createElement('div');
+		el.className = 'web-toast-kkli9 shx-in';
+		if (params.message !== undefined && params.message !== null) el.textContent = String(params.message);
+		if (params.background) el.style.backgroundColor = params.background;
+		if (params.color) el.style.color = params.color;
+		el.style.top = '50px';
+		el.style.bottom = '';
 		document.body.appendChild(el);
-		el.classList.add("fadeIn");
-		setTimeout(function () {
-			el.classList.remove("fadeIn");
-			el.classList.add("fadeOut");
-			/*监听动画结束，移除提示信息元素*/
-			el.addEventListener("animationend", function () {
-				document.body.removeChild(el);
-			});
-			el.addEventListener("webkitAnimationEnd", function () {
-				document.body.removeChild(el);
-			});
-		}, time);
-	};
-	this.filterStr = function(str){
-		if(!str) return "";
-		str = str.replace(/\t/g,"");
-		str = str.replace(/\r/g,"");
-		return encodeURIComponent(str)
-	};
-	this.getParamterQueryUrl = function(text, tag) { //查询GET请求url中的参数
-		if(text.indexOf("?")!=-1){ //选取?后面的字符串,兼容window.location.search，前面的?不能去掉
-			var textArray = text.split("?");
-			text = "?"+textArray[textArray.length-1];
-		}
-		var t = new RegExp("(^|&)" + tag + "=([^&]*)(&|$)");
-		var a = text.substr(1).match(t);
-		if (a != null){
-			return a[2];
-		}
-		return "";
-	};
-	this.getEndHtmlIdByUrl = function(url) { //获得以html结束的ID
-		if(url.indexOf("?")!=-1){
-			url = url.split("?")[0]
-		}
-		if(url.indexOf("#")!=-1){
-			url = url.split("#")[0]
-		}
-		var splitText = url.split("/");
-		var idText = splitText[splitText.length-1];
-		idText = idText.replace(".html","");
-		return idText;
-	};
-	this.isPC = function(){
-		var userAgentInfo = navigator.userAgent;
-		var Agents = ["Android", "iPhone","SymbianOS", "Windows Phone", "iPad", "iPod"];
-		var flag = true;
-		for (var v = 0; v < Agents.length; v++) {
-			if (userAgentInfo.indexOf(Agents[v]) > 0) {
-				flag = false;
-				break;
-			}
-		}
-		return flag;
-	};
-	this.getBilibiliBV=function(){
-		var pathname = window.location.pathname;
-		var bv = pathname.replace("/video/","").replace("/","");
-		return bv;
-	};
-	this.getSystemOS=function(){
-		var u = navigator.userAgent;
-		if (!!u.match(/compatible/i) || u.match(/Windows/i)) {
-			return 'windows';
-		} else if (!!u.match(/Macintosh/i) || u.match(/MacIntel/i)) {
-			return 'macOS';
-		} else if (!!u.match(/iphone/i) || u.match(/Ipad/i)) {
-			return 'ios';
-		} else if (!!u.match(/android/i)) {
-			return 'android';
-		} else {
-			return 'other';
-		}
-	};
-	this.RPCDownloadFile = function(fileName, url, savePath="D:/", RPCURL="ws://localhost:16800/jsonrpc", RPCToken="") {
-		const self = this;
-		if(!savePath){
-			savePath = "D:/";
-		}
-		if(!RPCURL){
-			RPCURL = "ws://localhost:16800/jsonrpc";
-		}
-		let options = { //下载配置文件
-			"dir":savePath,
-			"max-connection-per-server": "16",
-			"header":["User-Agent:"+navigator.userAgent+"", "Cookie:"+document.cookie+"", "Referer:"+window.location.href+""]
-		}
-		if(!!fileName) {
-			options.out = fileName;
-		}
-		let jsonRPC = {
-			"jsonrpc": "2.0",
-			"id": "huahuacat",
-			"method": "aria2.addUri",
-			"params": [[url], options],
-		}
-		if (!!RPCToken) {
-			jsonRPC.params.unshift("token:" + RPCToken); // 必须要加在第一个
-		}
-		return new Promise(function(resolve, reject) {
-			var webSocket = new WebSocket(RPCURL);
-			webSocket.onerror = function(event) {
-				console.log("webSocket.onerror", event);
-				reject("Aria2连接错误，请打开Aria2和检查RPC设置！");
-			}
-			webSocket.onopen = function(){
-				webSocket.send(JSON.stringify(jsonRPC));
-			}
-			webSocket.onmessage = function(event){
-				let result = JSON.parse(event.data);
-				switch (result.method) {
-					case "aria2.onDownloadStart":
-						resolve("Aria2 开始下载【"+fileName+"】");
-						webSocket.close();
-						break;
-					case "aria2.onDownloadComplete":
-						break;
-					default:
-						break;
-				}
-			}
-		});
-	};
-	this.getElementObject = function(selector, target=document.body, allowEmpty = true, delay=10, maxDelay=10 * 1000){
-		return new Promise((resolve,reject) =>{
-			if (selector.toUpperCase() === "BODY") {
-				resolve(document.body);
-				return;
-			}
-			if (selector.toUpperCase() === "HTML") {
-				resolve(document.html);
-				return;
-			}
-			let totalDelay = 0;
 
-			let element = target.querySelector(selector);
-			let result = allowEmpty ? !!element : (!!element && !!element.innerHTML);
-			if(result){
-				resolve(element);
-			}
-
-			const elementInterval = setInterval(()=>{
-				if(totalDelay >= maxDelay){
-					clearInterval(elementInterval);
-					resolve(null);
-				}
-				element = target.querySelector(selector);
-				result = allowEmpty ? !!element : (!!element && !!element.innerHTML);
-				if(result){
-					clearInterval(elementInterval);
-					resolve(element);
-				}else{
-					totalDelay += delay;
-				}
-			}, delay);
-		});
-	};
-	/**
-	 * @param {Object} time
-	 * @param {Object} format
-	 * 时间格式化
-	 * DateFormat(new Date(dateCreated), "yyyy-MM-dd hh:mm:ss")
-	 */
-	this.DateFormat = function(time, format) {
-		var o = {
-			"M+": time.getMonth() + 1, //月份
-			"d+": time.getDate(), //日
-			"h+": time.getHours(), //小时
-			"m+": time.getMinutes(), //分
-			"s+": time.getSeconds(), //秒
-			"q+": Math.floor((time.getMonth() + 3) / 3), //季度
-			"S": time.getMilliseconds() //毫秒
+		const remove = () => {
+			if (el.parentNode) el.parentNode.removeChild(el);
 		};
-		if(/(y+)/.test(format)){
-			format = format.replace(RegExp.$1, (time.getFullYear() + "").substr(4 - RegExp.$1.length));
-		}
-		for(var k in o){
-			if(new RegExp("(" + k + ")").test(format)){
-				format = format.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-			}
-		}
-		return format;
-	};
-	this.decryptStr=function(str){
-		let result = atob(str);
-		return result.split('').reverse().join('');
-	};
-	this.encryptStr=function(str){
-		let result = str.split('').reverse().join('');
-		return btoa(result);
-	};
-}
-//全局弹窗对象
-const dialog = (function(){
-	class Dialog {
-		constructor() {
-			this.mask = document.createElement('div');
-			this.dialogStyle = document.createElement('style');
+		const delay = params.time || 1500;
+		const finish = () => {
+			el.classList.remove('shx-in');
+			el.classList.add('shx-out');
+		};
+		// 动画结束则移除；若动画事件不触发（如无头环境），仍有兜底定时器
+		el.addEventListener('animationend', remove, { once: true });
+		setTimeout(() => { finish(); setTimeout(remove, 600); }, delay);
+	}
 
-			this.setStyle(this.mask, {
-				"width": '100%',
-				"height": '100%',
-				"backgroundColor": 'rgba(0, 0, 0, .6)',
-				"position": 'fixed',
-				"left": "0px",
-				"top": "0px",
-				"bottom":"0px",
-				"right":"0px",
-				"z-index":"9999999999999"
+	// 文件名清洗：去掉非法字符并限制长度
+	function cleanFileName(name, maxLen) {
+		let n = (name || String(Date.now()));
+		n = n.replace(/[\s\~`=|\\;:"',.><\/]/g, '');
+		return n.substring(0, maxLen || 50) + '.mp4';
+	}
+
+	// ============================================================
+	// 全局功能开关 + 设置弹框
+	// ============================================================
+	const SETTING_KEY = 'setingData';
+	let settings = gmGet(SETTING_KEY, null);
+	if (!settings || typeof settings !== 'object') settings = { bilibiliHelper: true };
+	if (typeof settings.bilibiliHelper !== 'boolean') {
+		settings.bilibiliHelper = true;
+		gmSet(SETTING_KEY, settings);
+	}
+
+	// 轻量对话框
+	const dialog = (() => {
+		let handle = null;
+		function close() {
+			if (!handle) return;
+			if (handle.mask.parentNode) handle.mask.parentNode.removeChild(handle.mask);
+			document.removeEventListener('keydown', handle.onKey);
+			handle = null;
+		}
+		function open(param) {
+			close(); // 防止重复打开出现多个遮罩
+			const isStr = typeof param === 'string';
+			const opts = isStr ? { title: param } : (param || {});
+
+			const mask = document.createElement('div');
+			const content = document.createElement('div');
+			const head = document.createElement('div');
+			const titleEl = document.createElement('span');
+			const closeBtn = document.createElement('span');
+			const body = document.createElement('div');
+
+			Object.assign(mask.style, {
+				width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,.6)',
+				position: 'fixed', left: '0', top: '0', zIndex: 9999999999,
 			});
-
-			this.content = document.createElement('div');
-			this.setStyle(this.content, {
-				"max-width": '450px',
-				"width":"100%",
-				"max-height": '600px',
-				"backgroundColor": '#fff',
-				"boxShadow": '0 0 2px #999',
-				"position": 'absolute',
-				"left": '50%',
-				"top": '50%',
-				"transform": 'translate(-50%,-50%)',
-				"borderRadius": '5px'
-			})
-			this.mask.appendChild(this.content);
-		}
-		middleBox(param) {
-			// 先清空中间小div的内容 - 防止调用多次，出现混乱
-			this.content.innerHTML = '';
-
-			let title = '默认标题内容';
-			if({}.toString.call(param) === '[object String]') {
-				title = param;
-			} else if({}.toString.call(param) === '[object Object]') {
-				title = param.title;
-			}
-
-			document.body.appendChild(this.mask);
-			this.title = document.createElement('div');
-			this.setStyle(this.title, {
-				"width": '100%',
-				"height": '40px',
-				"lineHeight": '40px',
-				"boxSizing": 'border-box',
-				"background-color":"#dedede",
-				"color": '#000',
-				"text-align": 'center',
-				"font-weight":"700",
-				"font-size":"17px",
-				"border-radius": "4px 4px 0px 0px"
+			Object.assign(content.style, {
+				maxWidth: '450px', width: '100%', maxHeight: '600px', backgroundColor: '#fff',
+				boxShadow: '0 0 2px #999', position: 'absolute', left: '50%', top: '50%',
+				transform: 'translate(-50%,-50%)', borderRadius: '5px',
 			});
-
-			this.title.innerText = title;
-			this.content.appendChild(this.title);
-
-			this.closeBtn = document.createElement('div');
-			this.closeBtn.innerText = '×';
-
-			this.setStyle(this.closeBtn, {
-				"textDecoration": 'none',
-				"color": '#000',
-				"position": 'absolute',
-				"right": '10px',
-				"top": '0px',
-				"fontSize": '25px',
-				"display":"inline-block",
-				"cursor":"pointer"
-			})
-			this.title.appendChild(this.closeBtn);
-
-			const self = this;
-			this.closeBtn.onclick = function(){
-				self.close();
-				if(param.onClose && (typeof param.onClose)==="function"){
-					param.onClose();
-				}
-			}
-		}
-		showMake(param) {
-			//添加公用样式表
-			if(param.hasOwnProperty("styleSheet")){
-				this.dialogStyle.textContent = param.styleSheet;
-			}
-			document.querySelector("head").appendChild(this.dialogStyle);
-
-			this.middleBox(param);
-			this.dialogContent = document.createElement('div');
-			this.setStyle(this.dialogContent,{
-				"padding":"15px",
-				"max-height":"400px"
+			Object.assign(head.style, {
+				width: '100%', height: '40px', lineHeight: '40px', boxSizing: 'border-box',
+				backgroundColor: '#dedede', color: '#000', textAlign: 'center',
+				fontWeight: '700', fontSize: '17px', borderRadius: '4px 4px 0 0', position: 'relative',
 			});
-			this.dialogContent.innerHTML = param.content;
-			this.content.appendChild(this.dialogContent);
-			param.onContentReady(this);
-		}
-		close() {
-			document.body.removeChild(this.mask);
-			document.querySelector("head").removeChild(this.dialogStyle);
-		}
-		setStyle(ele, styleObj) {
-			for(let attr in styleObj){
-				ele.style[attr] = styleObj[attr];
-			}
-		}
-	}
-	let dialog = null;
-	return (function() {
-		if(!dialog) {
-			dialog = new Dialog()
-		}
-		return dialog;
-	})()
-})();
+			Object.assign(closeBtn.style, {
+				textDecoration: 'none', color: '#000', position: 'absolute', right: '10px',
+				top: '0', fontSize: '25px', cursor: 'pointer', userSelect: 'none',
+			});
+			Object.assign(body.style, { padding: '15px', maxHeight: '400px', overflowY: 'auto' });
 
-//全局统一方法对象
-const commonFunctionObject = new CommonFunction();
-commonFunctionObject.addCommonHtmlCss();	//统一html、css元素添加
-let functionController = null;
-	//相关功能关闭控制
-functionController = commonFunctionObject.GMgetValue("setingData");
-if(!functionController){
-	functionController={
-		"bilibiliHelper":true
-	}
-}
-//用户功能设置函数
-function usersSeting(){
-	var bilibiliHelper=true;
-	var isUpdateStorage = false;
-	if(!functionController.hasOwnProperty("bilibiliHelper")){
-		functionController.bilibiliHelper = true;
-		isUpdateStorage = true;
-	}else{
-		bilibiliHelper = functionController.bilibiliHelper;
-	}
-	if(isUpdateStorage){
-		commonFunctionObject.GMsetValue("setingData",functionController);
-	}
-	var setingData=[
-		{"tag":"bilibiliHelper", "name":"B站使用加强(视频下载支持批量、浏览记录、一键三连)", "checked":bilibiliHelper}
-	]
-	var content = "";
-	for(var i=0; i<setingData.length;i++){
-		var one = setingData[i];
-		content += `
-			<div style="padding: 5px 0px;">
-				<input style="display:inline-block;width: 15px;height: 15px;display: inline-block;vertical-align: middle; -webkit-appearance:checkbox;margin-bottom: 3px;cursor: pointer;" name="Checkbox" type="checkbox" data-tag="`+one.tag+`" `+(one.checked ? "checked" : "")+`>
-				<label style="display:inline-block;font-size: 14px;margin:3px 0;vertical-align: middle;font-weight:500;color:#000;">`+one.name+`</label>
-			</div>
-		`
-	}
-	dialog.showMake({
-		"title":"功能开关",
-		"content":content,
-		"onClose":function(){
-			location.reload();
-		},
-		"onContentReady":function($that){
-			$that.dialogContent.querySelectorAll("input[type='checkbox']").forEach(function(checkbox){
-				checkbox.addEventListener("click", function(e){
-					var tag = e.target.getAttribute("data-tag");
-					var checked = e.target.checked;
-					functionController[tag] = checked;
-					commonFunctionObject.GMsetValue("setingData",functionController);
-					commonFunctionObject.webToast({"message":"操作成功", "background":"#FF4D40"});
+			titleEl.textContent = opts.title || '默认标题';
+			closeBtn.textContent = '×';
+			body.innerHTML = opts.content || '';
+			head.appendChild(titleEl);
+			head.appendChild(closeBtn);
+			content.appendChild(head);
+			content.appendChild(body);
+			mask.appendChild(content);
+			document.body.appendChild(mask);
+
+			handle = {
+				mask, content: body, close,
+				onKey: (e) => { if (e.key === 'Escape') close(); },
+			};
+			document.addEventListener('keydown', handle.onKey);
+
+			closeBtn.addEventListener('click', () => {
+				close();
+				if (typeof opts.onClose === 'function') opts.onClose();
+			});
+			if (typeof opts.onContentReady === 'function') {
+				opts.onContentReady({ content: body, dialog: handle });
+			}
+			return handle;
+		}
+		return { open, close };
+	})();
+
+	// 菜单“功能开关”
+	function usersSeting() {
+		const rows = [{
+			tag: 'bilibiliHelper',
+			name: 'B站使用加强(视频下载支持批量、浏览记录、一键三连)',
+			checked: !!settings.bilibiliHelper,
+		}];
+		const html = rows.map((one) => `
+			<div style="padding:5px 0">
+				<input style="width:15px;height:15px;vertical-align:middle;margin-bottom:3px;cursor:pointer"
+					type="checkbox" data-tag="${one.tag}" ${one.checked ? 'checked' : ''}>
+				<label style="font-size:14px;margin:3px 0;vertical-align:middle;font-weight:500;color:#000">${one.name}</label>
+			</div>`).join('');
+
+		dialog.open({
+			title: '功能开关',
+			content: html,
+			onClose: () => { try { location.reload(); } catch (_) {} },
+			onContentReady: (api) => {
+				$$('input[type="checkbox"]', api.content).forEach((checkbox) => {
+					checkbox.addEventListener('click', (e) => {
+						settings[e.target.getAttribute('data-tag')] = e.target.checked;
+						gmSet(SETTING_KEY, settings);
+						webToast({ message: '操作成功', background: '#FF4D40' });
+					});
 				});
-			})
-		}
+			},
+		});
+	}
+
+	// ============================================================
+	// B站增强：视频下载 / 一键三连 / 浏览记录 / 简介转链接
+	// ============================================================
+	const VIEW_API = 'https://api.bilibili.com/x/web-interface/view';
+	const PLAYURL_API = 'https://api.bilibili.com/x/player/playurl';
+	const DOWNLOAD_SETTING_KEY = 'download_setting_key';
+	const RECORD_KEY = 'bilibili_video_record';
+	const DEFAULT_DOWNLOAD_SETTING = () => ({
+		RPCURL: 'ws://localhost:16800/jsonrpc',
+		savePath: getSystemOS() === 'macOS' ? '' : 'D:/',
+		RPCToken: '',
+		downloadWay: 'Motrix',
 	});
-}
 
-// 菜单按钮弹框
-if(commonFunctionObject.isPC()){
-	GM_registerMenuCommand("功能开关",()=>usersSeting());
-}else{
-	functionController.bilibiliHelper = false;
-}
+	function startBilibiliHelper() {
+		const host = window.location.host;
+		const pathname = window.location.pathname;
+		const onVideoPage = host === 'www.bilibili.com' &&
+			(pathname.indexOf('/video') !== -1 || pathname.indexOf('/watchlater') !== -1);
 
-/**
- * B站相关功能：视频多P下载，一键三联，浏览记录等
- */
-function BilibiliHelper(){
-
-	this.isRun = function(){
-		return window.location.host.indexOf("bilibili.com") != -1
+		if (onVideoPage) initVideoToolbar();
+		initRecordView();
+		initTextToLink();
 	}
-	this.baseFunction = function(){
-		/**
-		 * b站基本功能，一件三连、视频解析、视频下载
-		 */
-		function baseFunctionObject(){
-			this.elementId = Math.ceil(Math.random()*100000000)+"mmx";
-			this.downloadSettingKey = "download_setting_key";
-			this.downloadResutError=function(btnElement){
-				btnElement.text("下载视频");
-				btnElement.removeAttr("disabled");
-			};
-			this.downloadResutSuccess=function(btnElement){
-				btnElement.text("下载视频");
-				btnElement.removeAttr("disabled");
-			};
-			this.getDownloadPages = function(){
-				return new Promise(function(resolve, reject) {
-					var pathname = window.location.pathname, bv = null;
-					if (pathname.indexOf("/medialist/play/watchlater/") != -1) { // 在下载视频的时候针对稍后再看页面的链接找BV号
-						bv = pathname.replace("/medialist/play/watchlater/","").replace("/","");
-					}else{
-						bv = pathname.replace("/video/","").replace("/","");
-					}
-					if(!bv){
-						resolve({"status":"bv_null"});
-						return;
-					}
-					//bv转av
-					commonFunctionObject.request("get", "https://api.bilibili.com/x/web-interface/view?bvid="+bv, null).then((resultData)=>{
-						let dataJson = JSON.parse(resultData.data);
-						if(!dataJson || dataJson.code!==0 || !dataJson.data){
-							resolve({"status":"request_error"});
-							return;
-						}
 
-						let data = dataJson.data;
-						if(!data){
-							resolve({"status":"aid_null"});
-							return;
-						}
+	// ---------------- 视频下载 / 一键三连 ----------------
+	function initVideoToolbar() {
+		// 清理可能残留的旧挂件
+		const old = $('[id^="bilibili_exti_"]');
+		if (old && old.parentNode) old.parentNode.removeChild(old);
 
-						let aid = data.aid;
-						let pic = data.pic;
-						let title = data.title
-						if(!aid){
-							resolve({"status":"aid_null"});
-							return;
-						}
+		const uid = rid();
+		const container = document.createElement('div');
+		container.id = 'bilibili_exti_' + uid;
+		container.className = 'shx-bili-toolbar';
+		container.innerHTML = `
+			<div class="self_s_btn" id="download_s_${uid}">下载视频</div>
+			<div class="self_s_btn" id="focus_s_${uid}">一键三连</div>`;
+		document.body.appendChild(container);
 
-						//获取cid
-						commonFunctionObject.request("get", "https://api.bilibili.com/x/web-interface/view?aid="+aid, null).then((resultData2)=>{
-							let dataJson2 = JSON.parse(resultData2.data);
-							if(!dataJson2 || dataJson2.code!==0 || !dataJson2.data){
-								resolve({"status":"request_error"});
-								return;
-							}
-							const downloadData = dataJson2.data;
-							const {aid,  bvid} = downloadData,
-								items = new Array();
-							//这是下载集合
-							if(downloadData.hasOwnProperty("ugc_season") && downloadData.ugc_season.hasOwnProperty("sections")){
-								let sections = downloadData.ugc_season.sections;
-								for(var i=0; i<sections.length; i++){
-									let section = sections[i];
-									if(section.hasOwnProperty("episodes")){
-										for(var j=0; j<section.episodes.length; j++){
-											let episode = section.episodes[j];
-                                            //console.log("episode:", j);
-                                            //console.dir(episode);
-								            let page = 1;
-                                            for(var k=0; k<episode.pages.length; k++){
-                                                let page_info = episode.pages[k];
-                                                items.push({
-												    "cover":"",
-												    "page":page,
-												    "title":page_info.part,
-												    "cid":page_info.cid,
-												    "aid":episode.aid
-											    });
-											    page++;
-                                            }
+		// 创建下载弹框
+		const modal = buildDownloadModal(uid);
+		document.body.appendChild(modal.mask);
+		document.body.appendChild(modal.body);
 
-										}
-									}
-								}
-							}else{ //这是多P下载
-								for(var i=0; i<downloadData.pages.length; i++){
-									let pageData = downloadData.pages[i];
-									items.push({
-										"cover":pageData.first_frame,
-										"page":pageData.page,
-										"title":pageData.part,
-										"cid":pageData.cid,
-										"aid":aid
-									});
-								}
-							}
-
-							resolve({"status":"success", "downloadData":{
-								"items":items,
-								"pic":pic,
-								"title":title
-							}});
-						}).catch((errorData)=>{
-							resolve({"status":"request_error"});
-						});
-					}).catch((errorData)=>{
-						resolve({"status":"request_error"});
-					});
-				});
-			};
-			this.startDownloadFile = function(options){
-				let aid = options.aid, cid = options.cid, fileName = options.fileName,
-					savePath = options.savePath, RPCURL = options.RPCURL, RPCToken = options.RPCToken;
-				let isByPRC = options.isByPRC;
-
-				commonFunctionObject.request("get", "https://api.bilibili.com/x/player/playurl?avid="+aid+"&cid="+cid+"&qn=112", null).then((resultData3)=>{
-
-					if(!fileName){
-						fileName = (new Date()).getTime() + "";
-					}
-					fileName = fileName.replace(/[\ |\~|\`|\=|\||\\|\;|\:|\"|\'|\,|\.|\>|\/]/g,"");
-					fileName = fileName.substring(0,50); //可能有异常，标题最多50字符
-					fileName = fileName + ".mp4";
-
-					let dataJson3 = JSON.parse(resultData3.data);
-					if(!!dataJson3 && dataJson3.code===0 && !!dataJson3.data){
-						let downloadUrl = dataJson3.data.durl[0].url;
-						if(isByPRC){
-							commonFunctionObject.RPCDownloadFile(fileName, downloadUrl, savePath, RPCURL).then((data)=>{
-								commonFunctionObject.webToast({"message":data, "time":3000});
-							}).catch((data)=>{
-								commonFunctionObject.webToast({"message":data, "time":3000});
-							});
-						}else{
-							window.open(downloadUrl);
-						}
-					}else{
-						commonFunctionObject.webToast({"message":"获取下载链接失败", "background":"#FF4D40"});
-					}
-				}).catch((errorData)=>{
-					commonFunctionObject.webToast({"message":"获取下载链接失败", "background":"#FF4D40"});
-				});
-			};
-			this.createModals = function(){
-				var css = `
-					.modal-mask-`+this.elementId+`{
-						position:fixed;
-						top:0;
-						left:0;
-						z-index:999;
-						width:100%;
-						height:100%;
-						display:none;
-						background-color:#000;
-						opacity:0.3;
-						overflow:hidden;
-					}
-					.modal-body-`+this.elementId+`{
-						position:fixed;
-						border-radius:5px;
-						background-color: #FFFFFF;
-						top:10%;
-						width:600px;
-						max-width:90%;
-						max-height:80%;
-						z-index:1000;
-						left: 50%;
-						transform: translateX(-50%);
-						display:none;
-						padding: 10px;
-						overflow-y: auto;
-					}
-					.modal-body-`+this.elementId+` >.page-header{
-						height:30px;
-						line-height:30px;
-						position:relative;
-					}
-					.modal-body-`+this.elementId+` >.page-header >span{
-						display:inline-block;
-					}
-					.modal-body-`+this.elementId+` >.page-header >span:nth-child(1) {
-						font-size:18px;
-						font-weight:bold;
-						position:absolute;
-						left:10px;
-					}
-					.modal-body-`+this.elementId+` >.page-header >span:nth-child(2) {
-						font-size:28px;
-						font-weight:bold;
-						position:absolute;
-						right:10px;
-						cursor:pointer;
-					}
-					.modal-body-`+this.elementId+` >.page-container{
-						max-height: 500px;
-						overflow-y: auto;
-					}
-					.modal-body-`+this.elementId+` .page-wrap{
-						display: flex;
-						flex-wrap: wrap;
-						margin-top:5px;
-					}
-					.modal-body-`+this.elementId+` .page-wrap >.board-item{
-						display: block;
-						width: calc(50% - 10px);
-						background-color: #6A5F60;
-						margin: 5px;
-						background-color:#FB7299;
-						color:#FFFFFF;
-						cursor: pointer;
-						overflow:hidden;
-						white-space:nowrap;
-						text-overflow:ellipsis;
-					}
-					.modal-body-`+this.elementId+` .page-wrap >.board-item >input{
-						width: 14px;
-						height: 14px;
-						vertical-align: middle;
-						margin-right:5px;
-					}
-					.modal-body-`+this.elementId+` .page-wrap >.board-item >span{
-						vertical-align: middle;
-					}
-					.modal-body-`+this.elementId+` .modal-btn-wrap{
-						text-align: center;
-						margin-top: 10px;
-						cursor: pointer;
-					}
-					.modal-body-`+this.elementId+` .aria2-setting{
-						border:1px dashed #F1F1F1;
-						border-radius:4px;
-						margin-top:10px;
-					}
-					.modal-body-`+this.elementId+` .aria2-setting >.setting-item{
-						text-align: center;
-						font-size:14px;
-						margin:10px 0px;
-					}
-					.modal-body-`+this.elementId+` .aria2-setting >.setting-item .topic-name{
-						display:inline-block;
-						width:80px;
-						text-align:left;
-					}
-					.modal-body-`+this.elementId+` .aria2-setting >.setting-item> input{
-						width:300px;
-						padding-left:10px;
-						border:1px solid #888;
-						outline:none;
-						border-radius:3px;
-					}
-					.modal-body-`+this.elementId+` .modal-btn-wrap >span{
-						border:1px solid #ccc;
-						display:inline-block;
-						padding:3px 5px;
-						margin:0px 5px;
-						border-radius:3px;
-					}
-					.modal-body-`+this.elementId+` .tip-wrap{
-						margin-top: 10px;
-						font-size:12px;
-					}
-					.modal-body-`+this.elementId+` .tip-wrap >.title{
-						font-size:16px;
-						font-weight:bold;
-					}
-					.modal-body-`+this.elementId+` .tip-wrap >.content >ul >li{
-						margin-top:5px;
-					}
-				`;
-
-				var html = `
-					<div class='modal-mask-`+this.elementId+`'></div>
-					<div class='modal-body-`+this.elementId+`'>
-						<div class="page-header">
-							<span>视频下载(可批量)</span>
-							<span class="close">×</span>
-						</div>
-						<div class="page-container">
-							<label style="color:red;">注：此功能会调用bilibili的API，脚本仅用于个人交流，切勿用于商业用途，否则后果自负，特此申明！</label>
-							<div class="page-wrap">
-							</div>
-							<div class="aria2-setting">
-								<div class="setting-item">
-									<span><input type="radio" name="downloadWay" value="Motrix">Motrix下载</span>&nbsp;&nbsp;&nbsp;
-									<span><input type="radio" name="downloadWay" value="AriaNgGUI">AriaNgGUI下载</span>
-								</div>
-								<div class="setting-item">
-									<label class="topic-name">配置RPC:</label><input type="text" name="RPCURL" value="" placeholder="请准确输入RPC对应软件的地址，默认：Motrix">
-								</div>
-								<div class="setting-item">
-									<label class="topic-name">配置Token:</label><input type="text" name="RPCToken" value="" placeholder="默认无需填写">
-								</div>
-								<div class="setting-item">
-									<label class="topic-name">保存路径:</label><input type="text" name="savePath" value="" placeholder="请准确输入文件保存路径">
-									<div style="font-size:12px;color:#888;">最好自定义下载地址，默认地址可能不满足需要</div>
-								</div>
-							</div>
-							<div class="modal-btn-wrap">
-								<span name="selectall">全选</span>
-								<span name="removeSelect">取消选择</span>
-								<span name="downloadAll">批量下载</span>
-							</div>
-							<div class="tip-wrap">
-								<div class="title">关于单P下载：</div>
-								<div class="content"><span>点击弹框单个选集，即可下载单集视频！PS:单P下载，推荐大家使用BBDown下载，此工具功能很强大，具体查看：<a target="_blank" href="https://github.com/nilaoda/BBDown">https://github.com/nilaoda/BBDown</a></span></div>
-							</div>
-							<div class="tip-wrap">
-								<div class="title">关于批量下载：</div>
-								<div class="content">
-									<ul>
-										<li>
-											<b>1、批量下载需要第三方软件的支持，脚本推荐使用：Motrix</b>
-											<ul>
-												<li>Motrix下载地址：<a href="https://motrix.app/zh-CN/" target="_blank">https://motrix.app/zh-CN/</a></li>
-												<li>AriaNgGUI下载地址：<a href="https://github.com/Xmader/aria-ng-gui" target="_blank">https://github.com/Xmader/aria-ng-gui</a></li>
-											</ul>
-										</li>
-										<li>
-											<b>2、在批量下载前需要提前打开软件，本教程以Motrix为准</b>
-											<ul>
-												<li>(1)、如果全部按照默认配置，只需要打开软件即可</li>
-												<li>(2)、如果想自定义RPC地址和文件保存路径，可更改上面输入框的内容（此数据非常重要，请准确填写）</li>
-												<li>
-												(3)、Motrix运行图片
-												<img src="https://pic.rmb.bdstatic.com/bjh/8912582c0416119405ec37ea27d12376.jpeg" width="100%" />
-												</li>
-											</ui>
-										</li>
-										<li>
-											<b>3、默认RPC默认地址</b>
-											<ul>
-												<li>(1)、Motrix RPC默认地址：ws://localhost:16800/jsonrpc</li>
-												<li>(2)、Aria2 RPC默认地址：ws://localhost:6800/jsonrpc</li>
-												<li>(3)点击“批量下载会自动保存当前下载设置”</li>
-											</ul>
-										</li>
-										<li>
-											<b>4、如使用AriaNgGUI，使用方式类似，大家可以自行研究</b>
-										</li>
-									</ul>
-								</div>
-							</div>
-							<div class="tip-wrap">
-								<div class="title">必要说明：</div>
-								<div class="content">
-									申明：本功能仅能作为学习交流使用，且不可用于其它用途，否则后果自负。请大家重视版权，尊重创作者，切勿搬运抄袭。请大家多用[一键三连]为创作者投币~，小破站牛掰！
-								</div>
-							</div>
-						</div>
-					</div>
-				`;
-				commonFunctionObject.GMaddStyle(css);
-				$("body").append(html);
-			};
-			this.hideModals = function(){
-				$(".modal-body-"+this.elementId+"").css('display','none');
-				$(".modal-mask-"+this.elementId+"").css('display','none');
-			};
-			this.showModals = function(pageHtml){
-				const self = this;
-				const downloadSettingKey = self.downloadSettingKey;
-				$(".modal-body-"+self.elementId+"").css('display','block');
-				$(".modal-mask-"+self.elementId+"").css('display','block');
-				$(".modal-body-"+self.elementId+" .page-wrap").html(pageHtml);
-
-				//初始化设置的数据
-				var savePath = "D:/";
-				if("macOS"===commonFunctionObject.getSystemOS()){
-					savePath = ""
-				}
-				const downloadSetting = commonFunctionObject.GMgetValue(this.downloadSettingKey,
-					{"RPCURL":"ws://localhost:16800/jsonrpc",
-					"savePath":savePath,
-					"RPCToken":'', "downloadWay":"Motrix"});
-				const isMotrix = downloadSetting.downloadWay=="Motrix";
-				$(".modal-body-"+self.elementId+" input[name='RPCURL']").val(downloadSetting.RPCURL);
-				$(".modal-body-"+self.elementId+" input[name='savePath']").val(downloadSetting.savePath);
-				$(".modal-body-"+self.elementId+" input[name='RPCToken']").val(downloadSetting.RPCToken);
-				$(".modal-body-"+self.elementId+" input[name='downloadWay']").removeAttr("checked");
-				if(isMotrix){
-					$(".modal-body-"+self.elementId+" input:radio[value='Motrix']").attr('checked','true');
-				}else{
-					$(".modal-body-"+self.elementId+" input:radio[value='AriaNgGUI']").attr('checked','true');
-				}
-
-				$(".modal-body-"+self.elementId+" .page-wrap >.board-item >span").off("click").on("click", function(){
-					$(this).css("background-color","#ccc");
-					let downloadOptions={
-						"aid":$(this).data("aid"),
-						"cid":$(this).data("cid"),
-						"isByPRC":false
-					}
-					self.startDownloadFile(downloadOptions);
-				});
-				$(".modal-body-"+self.elementId+" .page-header >span.close").off("click").on("click", function(){
-					self.hideModals();
-				});
-				$(".modal-body-"+self.elementId+" .modal-btn-wrap >span[name='selectall']").off("click").on("click", function(){
-					$(".modal-body-"+self.elementId+" .page-wrap").find("input[type='checkbox']").each(function(){
-						$(this).prop('checked', true);
-					});
-				});
-				$(".modal-body-"+self.elementId+" input[name='downloadWay']").off("change").on("change", function(){
-					if($(this).val()=="Motrix"){
-						$(".modal-body-"+self.elementId+" input[name='RPCURL']").val("ws://localhost:16800/jsonrpc");
-					}else{
-						$(".modal-body-"+self.elementId+" input[name='RPCURL']").val("ws://localhost:6800/jsonrpc");
-					}
-				});
-				$(".modal-body-"+self.elementId+" .modal-btn-wrap >span[name='removeSelect']").off("click").on("click", function(){
-					$(".modal-body-"+self.elementId+" .page-wrap").find("input[type='checkbox']").each(function(){
-						$(this).prop('checked', false);
-					});
-				});
-				$(".modal-body-"+self.elementId+" .modal-btn-wrap >span[name='downloadAll']").off("click").on("click", function(){
-					let RPCURL = $(".modal-body-"+self.elementId+" input[name='RPCURL']").val();
-					let savePath = $(".modal-body-"+self.elementId+" input[name='savePath']").val();
-					let RPCToken = $(".modal-body-"+self.elementId+" input[name='RPCToken']").val();
-					let downloadWay = $(".modal-body-"+self.elementId+" input[name='downloadWay']:checked").val();
-					commonFunctionObject.GMsetValue(downloadSettingKey,{"RPCURL":RPCURL, "savePath":savePath,
-						"RPCToken":RPCToken, "downloadWay":downloadWay});
-
-					let inputElements = $(".modal-body-"+self.elementId+" .page-wrap input[type='checkbox']:checked");
-					if(inputElements.length == 0){
-						commonFunctionObject.webToast({"message":"至少需要选中1P", "background":"#FF4D40"});
-						return;
-					}
-
-					if(!savePath){
-						commonFunctionObject.webToast({"message":"保存路径不能为空", "background":"#FF4D40"});
-						return;
-					}
-					if(!RPCURL){
-						commonFunctionObject.webToast({"message":"PRC地址不能为空", "background":"#FF4D40"});
-						return;
-					}
-					RPCToken = !RPCToken ? "" : RPCToken;
-					let downloadOptions = {
-						"aid":"",
-						"cid":"",
-						"isByPRC":true,
-						"fileName":"",
-						"savePath":savePath,
-						"RPCURL":RPCURL,
-						"RPCToken":RPCToken
-					}
-					inputElements.each(function(){
-						setTimeout(()=>{
-							let aid=$(this).data("aid"), cid = $(this).data("cid"), fileName = $(this).attr("title");
-							downloadOptions.aid = aid;
-							downloadOptions.cid = cid;
-							downloadOptions.fileName = fileName;
-							self.startDownloadFile(downloadOptions);
-						}, 1000);
-					})
-				});
-			};
-			this.createElementHtml = async function(){
-				$("#bilibili_exti_9787fjfh12j").remove();
-
-				const randomNumber = this.elementId, self = this;
-				let cssText = `
-					#bilibili_exti_9787fjfh12j{
-						position:fixed;
-						left:-30px;
-						top:250px;
-						opacity:0.6;
-						transition: 0.3s;
-					}
-					#bilibili_exti_9787fjfh12j >.self_s_btn{
-						background-color:#FB7299;
-						color:#FFF;
-						font-size:10px;
-						border-radius:3px;
-						cursor:pointer;
-						margin:10px 0px;
-						width:60px;
-						height:20px;
-						text-align:center;
-						line-height:20px;
-					}
-				`;
-				let htmlText=`
-					<div id="bilibili_exti_9787fjfh12j">
-						<div class="self_s_btn" id="download_s_`+randomNumber+`">下载视频</div>
-						<div class="self_s_btn" id="focus_s_`+randomNumber+`">一键三连</div>
-					</div>
-				`;
-
-				//添加下载等操作按钮
-				commonFunctionObject.GMaddStyle(cssText);
-				$("body").append(htmlText);
-
-				//创建弹框
-				this.createModals();
-
-				//移入移除操作
-				$("#bilibili_exti_9787fjfh12j").hover(function(){
-					$(this).css({
-						"left":"0px", "opacity":1
-					});
-				},function(){
-					$(this).css({
-						"left":(0-$(this).width())/2+"px", "opacity":0.6
-					});
-				});
-
-				//下载操作函数
-				$("body").on("click", "#download_s_"+randomNumber, function(){
-					const btnElement = $(this);
-					btnElement.attr("disabled", "disabled");
-					btnElement.text("准备中~");
-					//开始准备下载数据
-					self.getDownloadPages().then((resule)=>{
-						if(resule.status==="success"){
-							const {items, pic, title} = resule.downloadData;
-							let itemHtml = "";
-							itemHtml += "<div style='width:100%;'><a href='"+pic+"' target='_blank'>标题："+title+"（点我跳转封面）</a></div>";
-							for(var i=0; i<items.length; i++){
-								var currentTitle = "【P"+items[i].page+"】"+items[i].title+"";
-								itemHtml += "<div class='board-item'>";
-								itemHtml += "<input data-aid='"+items[i].aid+"' data-cid='"+items[i].cid+"' title='"+currentTitle+"' type='checkbox'>"
-								itemHtml += "<span data-aid='"+items[i].aid+"' data-cid='"+items[i].cid+"' title='"+currentTitle+"'>"+currentTitle+"</span>";
-								itemHtml += "</div>";
-							}
-							self.showModals(itemHtml);
-							self.downloadResutSuccess(btnElement);
-						}else{
-							self.downloadResutError(btnElement);
-						}
-					}).catch((error)=>{
-						self.downloadResutError(btnElement);
-					});
-				});
-				$("body").on("click", "#focus_s_"+randomNumber, function(){
-					$("#arc_toolbar_report .video-like").click(); // 点赞
-					$("#arc_toolbar_report .video-coin").click(); // 投币
-					// $("#arc_toolbar_report .video-fav").click(); // 收藏
-				});
-			}
-			this.start = function(){
-				let locationHost = window.location.host, locationPathname = window.location.pathname;
-				if(locationHost==="www.bilibili.com" && (locationPathname.indexOf("/video")!=-1 || locationPathname.indexOf("/watchlater")!=-1)){
-					this.createElementHtml();
-				}
-			}
-		}
-		try{
-			(new baseFunctionObject()).start();
-		}catch(e){
-			console.log("baseFunctionObject new error", e);
-		}
-	};
-	/**
-	 * 浏览历史记录提醒
-	 */
-	this.recordViewFunction = function(){
-		function recordViewObject(){
-			this.localCacheName = "bilibili_video_record";
-			this.recordOneVideo = function(){
-				let promise = new Promise((resolve, reject)=>{
-					let bv = commonFunctionObject.getBilibiliBV();
-					let cacheText = commonFunctionObject.GMgetValue(this.localCacheName);
-					cacheText = !cacheText ? "" : cacheText
-					let maxLength = 12*500;
-					let currentLength = cacheText.length;
-					if(currentLength > maxLength){
-						cacheText = cacheText.substring(12*100, currentLength);
-					}
-
-					if(cacheText.indexOf(bv)==-1){
-						cacheText += bv;
-						commonFunctionObject.GMsetValue(this.localCacheName, cacheText);
-					}
-					resolve({"result":"success"});
-				});
-			};
-			this.searchPageRemindHtml = function($ele, top=8, right=8){
-				if($ele.find("div[name='marklooked']").length==0){
-					$ele.css("position","relative");
-					$ele.append("<div name='marklooked' style='z-index: 100;position:absolute; top:"+top+"px; right:"+right+"px; background-color: rgba(251,123,159,1); border-radius:3px; font-size:10px; color:#FFF;padding:0px 2px;'>已看</div>");
-				}
-			};
-			this.searchPageRemind = function(){
-				let $that = this;
-				var elementArray = [
-					{"node":".bili-video-card", "top":8, "right":12},  //兼容 MAC M1搜索结果
-					{"node":"#page-index .small-item", "top":12, "right":12},  //用户投稿
-					{"node":"#submit-video-list .small-item", "top":12, "right":12}, //用户主页
-					{"node":"#page-series-detail .small-item.fakeDanmu-item", "top":12, "right":12}, //用户主页投稿
-				];
-				setInterval(function(){
-					let cacheText = commonFunctionObject.GMgetValue($that.localCacheName);
-					cacheText = !cacheText ? "" : cacheText;
-					for(var i=0; i<elementArray.length; i++){
-						var elementobj = elementArray[i];
-						$(elementobj.node).each(function(){
-							if($(this).attr("dealxll")!=="true"){
-								var videourl = $(this).find("a[href^='//www.bilibili.com/video']").attr("href");
-								if(!!videourl){
-									var bvs = videourl.match(/(\/BV(.*?)\/)/g)
-									if(bvs.length==1){
-										var bv = bvs[0].replace(/\//g,"");
-										if(cacheText.indexOf(bv) != -1){
-											$that.searchPageRemindHtml($(this), elementobj.top, elementobj.right);
-										}
-										$(this).unbind("click").bind("click", ()=>{  //循环操作，单独绑定
-											$that.searchPageRemindHtml($(this), elementobj.top, elementobj.right);
-										})
-									}
-									$(this).attr("dealxll","true");
-								}
-							}
-						});
-					}
-				}, 500);
-			}
-			this.start=function(){
-				let $that = this;
-				if(window.location.pathname.indexOf("/video")!=-1 && window.location.host==="www.bilibili.com"){
-					let currentHref = "";
-					setInterval(()=>{ //需要循环存储
-						if(window.location.href !== currentHref){
-							this.recordOneVideo();
-							currentHref = window.location.href;
-						}
-					}, 500);
-				}
-				//搜索结果和用户主页已经看过的视频提醒
-				if(window.location.host.indexOf("bilibili.com")!=-1){
-					this.searchPageRemind();
-					GM_registerMenuCommand("清空B站浏览记录",function(){
-						if(confirm('是否要清空B站浏览记录？清空后将不可恢复...')){
-							commonFunctionObject.GMsetValue($that.localCacheName, "");
-						}
-					});
-				}
-			};
-		}
-		try{
-			(new recordViewObject()).start();
-		}catch(e){
-			console.log("recordViewObject new error", e);
-		}
-	};
-	/**
-	 * 视频描述文本转链接
-	 */
-	this.textToLinkFunction = function() {
-		function textToLinkObject(){
-			this.link = function(selector){
-				const current_href = window.location.href;
-				const textToLinkArea = document.querySelector(selector);
-
-				if(!textToLinkArea){
-					return;
-				}
-				findAndReplaceDOMText(textToLinkArea, {
-					find: /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/g,
-					replace: function (e, t) {
-						let text = e.text;
-						let element = null;
-						if(text.indexOf("bilibili.com")==-1 && /^(http|ftp|https)/i.test(text)){
-							element = document.createElement("a");
-							element.setAttribute("href", text)
-							element.setAttribute("target", "_blank");
-							element.style.color="#00AEEC";
-						}else{
-							element = document.createElement("span");
-						}
-						element.innerText = text;
-						return element;
-					},
-					preset: "prose"
-				});
-
-			}
-			this.start = function(){
-				const selector = "#v_desc";
-				this.link(selector);
-
-				const MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
-				const bodyMutationObserver = new MutationObserver(()=>{
-					this.link(selector);
-				});
-
-				const element = document.querySelector(selector);
-				if(element){
-					bodyMutationObserver.observe(element,
-						{"characterData":true, "attributes":true, "childList":true},
-					);
-				}
-			}
-		}
-		try{
-			(new textToLinkObject()).start();
-		}catch(e){
-			console.log("textToLinkObject new error", e);
-		}
-	}
-	this.signIn = async function(){ //签到下线，2024年7月2日
-
-	}
-	this.start = function(){
-		if(this.isRun()){
-			this.baseFunction();
-			this.recordViewFunction();
-			this.textToLinkFunction();
-			this.signIn();
-		}
-	}
-}
-
-try{
-	if(!functionController || functionController.bilibiliHelper){
-		new BilibiliHelper().start();
-	}
-}catch(e){
-	console.log("B站视频下载：error："+e);
-}
-
-function ServerNavigation(){
-	this.allowHosts = ["tencent.com","aliyun.com","huaweicloud.com","bandwagonhost.com","hostwinds.com"];
-	this.number = Math.ceil(Math.random()*100000000);
-	this.containerHight = 150;
-	this.GMopenInTab = function(url, options={"active":true, "insert":true, "setParent":true}){
-		if (typeof GM_openInTab === "function") {
-			GM_openInTab(url, options);
-		} else {
-			GM.openInTab(url, options);
-		}
-	};
-	this.addStyle = function(css){
-		GM_addStyle(css);
-	};
-	this.serverMenu = function(){
-		var isOpenServer = GM_getValue("server_navigation_key", true);
-		GM_registerMenuCommand("服务器导航设置",()=>{
-			var person = prompt("是否开启服务器导航功能？请填写yes或者no....", isOpenServer ? "yes" : "no");
-		  if(person==null||person==undefined){
-			return;
-		  }
-		  var validate = person==="no"||person==="NO"||person==="yes"|| person==="YES";
-		  if(validate) GM_setValue("server_navigation_key", (person==="yes"|| person==="YES"));
-
-		  var toastMessage = "开启服务器导航功能";
-			if(person==="yes"|| person==="YES"){
-			toastMessage = "开启服务器导航功能";
-		  }else if(person==="no"|| person==="NO"){
-			toastMessage = "关闭服务器导航功能";
-		  }else{
-			toastMessage = "参数错误，只能填写yes或者no";
-		  }
-		  toast.show({"message":toastMessage, "background":"#474747"});
-		  //只有验证通过后，才会刷新页面
-		  if(validate){
-			setTimeout(function(){
-			  location.reload();
-			},1000);
-		  }
+		// 挂件移入移出
+		container.addEventListener('mouseenter', () => {
+			container.style.left = '0px';
+			container.style.opacity = '1';
 		});
-	};
-	this.request = function(mothed, url, param){   //网络请求
-		return new Promise(function(resolve, reject){
-			GM_xmlhttpRequest({
-				url: url,
-				method: mothed,
-				data:param,
-				onload: function(response) {
-					var status = response.status;
-					var playurl = "";
-					if(status==200||status=='200'){
-						var responseText = response.responseText;
-						resolve({"result":"success", "responseText":responseText});
-					}else{
-						reject({"result":"error", "responseText":null});
+		container.addEventListener('mouseleave', () => {
+			container.style.left = '-' + Math.max(0, (container.offsetWidth || 60) / 2) + 'px';
+			container.style.opacity = '0.6';
+		});
+
+		// 一键三连
+		$('#focus_s_' + uid, container).addEventListener('click', () => {
+			const bar = $('#arc_toolbar_report');
+			const like = $('.video-like', bar);
+			const coin = $('.video-coin', bar);
+			if (like) like.click();
+			if (coin) coin.click();
+		});
+
+		// 下载
+		const downloadBtn = $('#download_s_' + uid, container);
+		downloadBtn.addEventListener('click', () => {
+			downloadBtn.disabled = true;
+			downloadBtn.textContent = '准备中~';
+			prepareDownloadPages()
+				.then((result) => {
+					if (result.status === 'success') {
+						const { model, pic, title } = result.downloadData;
+						modal.show(model, pic, title);
 					}
+				})
+				.catch(() => { /* ignore */ })
+				.then(() => {
+					downloadBtn.disabled = false;
+					downloadBtn.textContent = '下载视频';
+				});
+		});
+
+		addStyle(`
+			.shx-bili-toolbar{
+				position:fixed; left:-30px; top:250px; opacity:.6; transition:.3s; z-index:9999;
+			}
+			.shx-bili-toolbar .self_s_btn{
+				background-color:#FB7299; color:#FFF; font-size:12px; border-radius:3px;
+				cursor:pointer; margin:10px 0; width:64px; height:22px; text-align:center;
+				line-height:22px;
+			}
+			.shx-bili-toolbar .self_s_btn[disabled]{ opacity:.5; cursor:wait; }
+		`);
+	}
+
+	// 归一化合集数据：每集拆成一个独立条目，并保留该集内部的每个分P
+	function normalizeSeason(data) {
+		const aid = data.aid;
+		const sections = (data.ugc_season && data.ugc_season.sections) || [];
+		const episodes = [];
+		const secCount = sections.length;
+		sections.forEach((section, si) => {
+			const secTitle = section.title || '';
+			const useSec = secCount > 1 && !!secTitle;
+			(section.episodes || []).forEach((ep, ei) => {
+				let pages = [];
+				if (Array.isArray(ep.pages) && ep.pages.length) {
+					pages = ep.pages.map((p) => ({ aid: ep.aid, cid: p.cid, page: p.page || 1, part: p.part || '' }));
+				} else if (ep.cid) {
+					// 该集没带 pages，用顶层 cid 兜底为单分P
+					pages = [{ aid: ep.aid, cid: ep.cid, page: (ep.page && ep.page.page) || 1, part: (ep.page && ep.page.part) || '' }];
+				}
+				// 正在看的这一集若合集中没带 pages，用当前页面的 data.pages 兜底
+				if (ep.aid === aid && !pages.length && Array.isArray(data.pages) && data.pages.length) {
+					pages = data.pages.map((p) => ({ aid: aid, cid: p.cid, page: p.page || 1, part: p.part || '' }));
+				}
+				if (!pages.length) return;
+				const base = '第' + (ei + 1) + '集';
+				episodes.push({
+					label: useSec ? secTitle + '·' + base : base,
+					title: ep.title || (ep.arc && ep.arc.title) || '',
+					aid: ep.aid,
+					pages: pages,
+				});
+			});
+		});
+		return { title: (data.ugc_season && data.ugc_season.title) || '', episodes: episodes };
+	}
+
+	// 构建下载弹框 DOM（返回 {mask, body, show, hide}）
+	function buildDownloadModal(uid) {
+		const CSS = `
+			.modal-mask-${uid}{
+				position:fixed; top:0; left:0; z-index:999; width:100%; height:100%;
+				display:none; background-color:#000; opacity:.3;
+			}
+			.modal-body-${uid}{
+				position:fixed; border-radius:5px; background:#fff; top:10%; width:600px;
+				max-width:90%; max-height:80%; z-index:1000; left:50%;
+				transform:translateX(-50%); display:none; padding:10px; overflow-y:auto;
+			}
+			.modal-body-${uid} .page-header{height:30px;line-height:30px;position:relative}
+			.modal-body-${uid} .page-header>span{display:inline-block}
+			.modal-body-${uid} .page-header>span:nth-child(1){
+				font-size:18px;font-weight:bold;position:absolute;left:10px;
+			}
+			.modal-body-${uid} .page-header>span:nth-child(2){
+				font-size:28px;font-weight:bold;position:absolute;right:10px;cursor:pointer;
+			}
+			.modal-body-${uid} .page-container{max-height:500px;overflow-y:auto}
+			.modal-body-${uid} .page-wrap{display:flex;flex-wrap:wrap;margin-top:5px}
+			.modal-body-${uid} .page-wrap>.board-item{
+				display:block;width:calc(50% - 10px);background:#FB7299;color:#fff;
+				margin:5px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+				border-radius:3px;
+			}
+			.modal-body-${uid} .page-wrap>.board-item input{
+				width:14px;height:14px;vertical-align:middle;margin-right:5px;
+			}
+			.modal-body-${uid} .page-wrap>.board-item>span{vertical-align:middle;display:inline-block;max-width:78%;overflow:hidden;text-overflow:ellipsis}
+			.modal-body-${uid} .page-wrap>.board-item .ep-badge{
+				display:inline-block;vertical-align:middle;margin-left:4px;padding:0 4px;border-radius:3px;
+				font-size:10px;color:#FB7299;background:#fff;
+			}
+			.modal-body-${uid} .modal-btn-wrap{text-align:center;margin-top:10px;cursor:pointer}
+			.modal-body-${uid} .modal-btn-wrap>span{
+				border:1px solid #ccc;display:inline-block;padding:3px 8px;margin:0 5px;border-radius:3px;
+			}
+			.modal-body-${uid} .dl-select-bar{
+				display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:2;
+				padding:6px 10px;margin-top:8px;background:#fafafa;border:1px solid #eee;
+				border-radius:4px;font-size:13px;color:#555;
+			}
+			.modal-body-${uid} .dl-select-bar .dl-master{
+				display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none;
+			}
+			.modal-body-${uid} .dl-select-bar .dl-master input{
+				width:15px;height:15px;vertical-align:middle;cursor:pointer;
+			}
+			.modal-body-${uid} .dl-select-bar .dl-count{color:#FB7299;font-weight:600}
+			.modal-body-${uid} .dl-scope{
+				display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+				padding:6px 10px;margin-top:6px;background:#fff;border:1px dashed #eee;
+				border-radius:4px;font-size:13px;color:#555;
+			}
+			.modal-body-${uid} .dl-scope label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
+			.modal-body-${uid} .dl-scope input{margin:0}
+			.modal-body-${uid} .dl-current{margin:6px 10px 0}
+			.modal-body-${uid} .dl-current .dl-current-btn{
+				display:inline-flex; align-items:center; gap:6px; max-width:100%;
+				background:#FB7299; color:#fff; border:none; border-radius:4px;
+				padding:7px 14px; font-size:13px; cursor:pointer; user-select:none;
+			}
+			.modal-body-${uid} .dl-current .dl-current-btn:hover{filter:brightness(.96)}
+			.modal-body-${uid} .dl-current .dl-current-name{
+				display:inline-block; overflow:hidden; text-overflow:ellipsis;
+				white-space:nowrap; max-width:280px; vertical-align:bottom;
+			}
+			.modal-body-${uid} .board-item.dl-cur{box-shadow:0 0 0 2px #fff inset, 0 0 0 4px #ff97b0}
+			.modal-body-${uid} .aria2-setting{
+				border:1px dashed #F1F1F1;border-radius:4px;margin-top:10px;
+			}
+			.modal-body-${uid} .setting-item{text-align:center;font-size:14px;margin:10px 0}
+			.modal-body-${uid} .setting-item .topic-name{
+				display:inline-block;width:80px;text-align:left;
+			}
+			.modal-body-${uid} .setting-item>input{
+				width:300px;padding-left:10px;border:1px solid #888;outline:none;border-radius:3px;height:24px;
+			}
+			.modal-body-${uid} .tip-wrap{margin-top:10px;font-size:12px}
+			.modal-body-${uid} .tip-wrap>.title{font-size:16px;font-weight:bold}
+			.modal-body-${uid} .tip-wrap>.content>ul>li{margin-top:5px;line-height:1.6}
+		`;
+		addStyle(CSS);
+
+		const mask = document.createElement('div');
+		mask.className = 'modal-mask-' + uid;
+		const body = document.createElement('div');
+		body.className = 'modal-body-' + uid;
+		body.innerHTML = `
+			<div class="page-header">
+				<span>视频下载(可批量)</span>
+				<span class="close">×</span>
+			</div>
+			<div class="page-container">
+				<label style="color:red;font-size:12px">注：此功能会调用bilibili的API，脚本仅用于个人交流，切勿用于商业用途，否则后果自负，特此申明！</label>
+				<div class="dl-select-bar" title="选集很多时可在这里一键全选">
+					<label class="dl-master"><input type="checkbox" name="dlMaster"> 全选</label>
+					<span class="dl-count"></span>
+				</div>
+				<div class="dl-scope" style="display:none">
+					<span>下载范围：</span>
+					<label><input type="radio" name="dlScope" value="episode" checked> 按集下载(合集)</label>
+					<label><input type="radio" name="dlScope" value="part"> 下载全部P</label>
+				</div>
+				<div class="dl-current" style="display:none">
+					<button type="button" class="dl-current-btn" name="dlCurrent">◎ 下载当前集：<span class="dl-current-name"></span></button>
+				</div>
+				<div class="page-wrap"></div>
+				<div class="aria2-setting">
+					<div class="setting-item">
+						<span><input type="radio" name="downloadWay" value="Motrix">Motrix下载</span>&nbsp;&nbsp;&nbsp;
+						<span><input type="radio" name="downloadWay" value="AriaNgGUI">AriaNgGUI下载</span>
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">配置RPC:</label>
+						<input type="text" name="RPCURL" placeholder="请准确输入RPC对应软件的地址，默认：Motrix">
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">配置Token:</label>
+						<input type="text" name="RPCToken" placeholder="默认无需填写">
+					</div>
+					<div class="setting-item">
+						<label class="topic-name">保存路径:</label>
+						<input type="text" name="savePath" placeholder="请准确输入文件保存路径">
+						<div style="font-size:12px;color:#888">最好自定义下载地址，默认地址可能不满足需要</div>
+					</div>
+				</div>
+				<div class="modal-btn-wrap">
+					<span name="selectall">全选</span>
+					<span name="removeSelect">取消选择</span>
+					<span name="downloadAll">批量下载</span>
+				</div>
+				<div class="tip-wrap">
+					<div class="title">关于下载：</div>
+					<div class="content"><ul>
+						<li>1、<b>合集</b>视频可先在上方选择范围：「按集下载(合集)」整集勾选（该集含多个分P会一起下）或「下载全部P」单独挑选</li>
+						<li>2、点击单个分P标题可浏览器直接打开；批量下载请先打开
+							<a target="_blank" href="https://motrix.app/zh-CN/">Motrix</a> 或
+							<a target="_blank" href="https://github.com/Xmader/aria-ng-gui">AriaNgGUI</a>，
+							单集也推荐使用 <a target="_blank" href="https://github.com/nilaoda/BBDown">BBDown</a></li>
+						<li>3、Motrix 默认 RPC：ws://localhost:16800/jsonrpc；Aria2 默认 RPC：ws://localhost:6800/jsonrpc；点击“批量下载”会自动保存当前下载设置</li>
+					</ul></div>
+				</div>
+			</div>`;
+
+		const pageWrap = $('.page-wrap', body);
+		const closeBtn = $('.page-header .close', body);
+		const masterBox = $('input[name="dlMaster"]', body);
+		const countEl = $('.dl-count', body);
+		const scopeRow = $('.dl-scope', body);
+		const scopeRadios = $$('input[name="dlScope"]', body);
+		const currentWrap = $('.dl-current', body);
+		const currentBtn = $('[name="dlCurrent"]', body);
+		const currentNameEl = $('.dl-current-name', body);
+
+		let model = null;          // {kind:'plain', parts} | {kind:'season', episodes}
+		let currentAid = null;     // 当前正在观看的视频 aid（用于定位“当前集”）
+		let scope = 'plain';       // 'plain' | 'episode' | 'part'
+		let cover = '';
+		let videoTitle = '';
+
+		// HTML/属性转义（标题里可能带引号、尖括号）
+		function esc(s) {
+			return String(s == null ? '' : s)
+				.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+		}
+
+		// 读取某一行对应的下载任务列表（checkbox 上保存了 JSON）
+		function tasksOf(box) {
+			if (box && box.dataset && box.dataset.tasks) {
+				try {
+					const t = JSON.parse(box.dataset.tasks);
+					if (Array.isArray(t) && t.length) return t;
+				} catch (_) { /* ignore */ }
+			}
+			return [{
+				aid: +(box && box.dataset.aid),
+				cid: +(box && box.dataset.cid),
+				fileBase: (box && box.title) || '',
+			}];
+		}
+
+		// 把当前模型按 scope 展开为“行”
+		function currentRows() {
+			if (!model) return [];
+			if (model.kind === 'plain') {
+				return model.parts.map((p) => {
+					const name = '【P' + p.page + '】' + (p.part || '');
+					return { name: name, multi: false, tasks: [{ aid: p.aid, cid: p.cid, fileBase: name }] };
+				});
+			}
+			if (scope === 'episode') {
+				// 按集：每集一行；多分P的集下载时展开为该集所有分P
+				return model.episodes.map((ep) => {
+					const name = (ep.label + ' ' + ep.title).trim();
+					const multi = ep.pages.length > 1;
+					const tasks = ep.pages.map((p, k) => ({
+						aid: p.aid || ep.aid,
+						cid: p.cid,
+						fileBase: name + (multi ? (p.part ? ' P' + (k + 1) + ' ' + p.part : ' P' + (k + 1)) : ''),
+					}));
+					return { name: name, multi: multi, tasks: tasks };
+				});
+			}
+			// 按分P：合集内所有分P平铺
+			const rows = [];
+			model.episodes.forEach((ep) => {
+				const base = (ep.label + ' ' + ep.title).trim();
+				const multi = ep.pages.length > 1;
+				ep.pages.forEach((p, k) => {
+					const name = base + (multi ? (p.part ? ' P' + (k + 1) + ' ' + p.part : ' P' + (k + 1)) : '');
+					rows.push({ name: name, multi: false, tasks: [{ aid: p.aid || ep.aid, cid: p.cid, fileBase: name }] });
+				});
+			});
+			return rows;
+		}
+
+		// 渲染当前范围下的列表
+		function renderList() {
+			const rows = currentRows();
+			const head = '<div style="width:100%"><a href="' + esc(cover) + '" target="_blank">标题：' +
+				esc(videoTitle) + '（点我跳转封面）</a></div>';
+			pageWrap.innerHTML = head + rows.map((r) => {
+				const first = r.tasks[0];
+				const text = r.name + (r.multi ? '（' + r.tasks.length + '分P）' : '');
+				const badge = r.multi ? '<span class="ep-badge">' + r.tasks.length + '分P</span>' : '';
+				const tasksJson = JSON.stringify(r.tasks);
+				return '<div class="board-item">' +
+					'<input type="checkbox" data-aid="' + esc(first.aid) + '" data-cid="' + esc(first.cid) +
+					'" data-tasks="' + esc(tasksJson) + '" title="' + esc(text) + '">' +
+					'<span data-aid="' + esc(first.aid) + '" data-cid="' + esc(first.cid) +
+					'" data-tasks="' + esc(tasksJson) + '" title="' + esc(text) + '">' + esc(r.name) + badge + '</span></div>';
+			}).join('');
+		}
+
+		// 顶部“全选/已选数量”联动：选集很多时无需滚到弹框底部操作
+		function selectionSummary() {
+			const boxes = $$('.page-wrap input[type="checkbox"]', body);
+			const total = boxes.length;
+			const checked = boxes.filter((b) => b.checked).length;
+			if (masterBox) {
+				masterBox.checked = total > 0 && checked === total;
+				masterBox.indeterminate = checked > 0 && checked < total;
+			}
+			if (countEl) {
+				const unit = model && model.kind === 'season' && scope === 'episode' ? '集' : 'P';
+				countEl.textContent = total ? '已选 ' + checked + '/' + total + ' ' + unit : '';
+			}
+			return checked;
+		}
+
+		// 当前正在观看的那一集（用 aid 在合集里定位）
+		function currentEpisodeIndex() {
+			if (!model || model.kind !== 'season') return -1;
+			for (let i = 0; i < model.episodes.length; i++) {
+				if (model.episodes[i].aid === currentAid) return i;
+			}
+			return -1;
+		}
+		// 按集模式下显示“下载当前集”快捷按钮（带集名称）
+		function refreshCurrentBtn() {
+			const ok = model && model.kind === 'season' && scope === 'episode';
+			const idx = ok ? currentEpisodeIndex() : -1;
+			if (!ok || idx < 0 || !currentWrap) {
+				if (currentWrap) currentWrap.style.display = 'none';
+				return;
+			}
+			const ep = model.episodes[idx];
+			currentNameEl.textContent = (ep.label + ' ' + ep.title).trim();
+			currentWrap.style.display = '';
+		}
+
+		function hide() {
+			body.style.display = 'none';
+			mask.style.display = 'none';
+		}
+		function show(dataModel, pic, title) {
+			model = dataModel || null;
+			currentAid = (dataModel && dataModel.currentAid) || null;
+			cover = pic || '';
+			videoTitle = title || '';
+			if (model && model.kind === 'season') {
+				scope = 'episode'; // 合集默认按集，避免几百个分P混在一起
+				scopeRow.style.display = '';
+				scopeRadios.forEach((r) => { r.checked = (r.value === 'episode'); });
+			} else {
+				scope = 'plain';
+				scopeRow.style.display = 'none';
+			}
+			renderList();
+			refreshCurrentBtn();
+			applySavedSettings();
+			selectionSummary();
+			body.style.display = 'block';
+			mask.style.display = 'block';
+		}
+
+		// 读取/回填 aria2 设置（含默认值）
+		function applySavedSettings() {
+			const saved = gmGet(DOWNLOAD_SETTING_KEY, null) || {};
+			const conf = Object.assign(DEFAULT_DOWNLOAD_SETTING(), saved);
+
+			$('input[name="RPCURL"]', body).value = conf.RPCURL;
+			$('input[name="savePath"]', body).value = conf.savePath;
+			$('input[name="RPCToken"]', body).value = conf.RPCToken;
+			const radios = $$('input[name="downloadWay"]', body);
+			radios.forEach((r) => { r.checked = (r.value === conf.downloadWay); });
+			if (!radios.some((r) => r.checked)) radios[0].checked = true;
+		}
+
+		if (masterBox) {
+			masterBox.addEventListener('change', () => {
+				$$('.page-wrap input[type="checkbox"]', body).forEach((c) => { c.checked = masterBox.checked; });
+				selectionSummary();
+			});
+		}
+		// 手动勾选任意行时实时刷新顶部状态
+		pageWrap.addEventListener('change', (e) => {
+			if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'checkbox') selectionSummary();
+		});
+
+		// 切换下载范围（按集 / 全部P）
+		scopeRadios.forEach((radio) => {
+			radio.addEventListener('change', () => {
+				if (!radio.checked) return;
+				scope = radio.value;
+				renderList();
+				refreshCurrentBtn();
+				selectionSummary();
+			});
+		});
+
+		// “下载当前集”：一键定位并只勾选正在观看的这集
+		currentBtn.addEventListener('click', () => {
+			if (!model || model.kind !== 'season' || scope !== 'episode') return;
+			const idx = currentEpisodeIndex();
+			if (idx < 0) {
+				webToast({ message: '未在当前合集中定位到正在观看的集', background: '#FF4D40' });
+				return;
+			}
+			const boxes = $$('.page-wrap input[type="checkbox"]', body);
+			boxes.forEach((b, i) => {
+				b.checked = (i === idx);
+				if (b.closest) b.closest('.board-item').classList.toggle('dl-cur', i === idx);
+			});
+			selectionSummary();
+			if (boxes[idx] && boxes[idx].scrollIntoView) {
+				try {
+					boxes[idx].closest('.board-item').scrollIntoView({ block: 'center' });
+				} catch (_) { /* jsdom 等环境可能不支持 scrollIntoView 选项 */ }
+			}
+			webToast({ message: '已勾选当前集，点击下方“批量下载”即可整集下载', time: 2500 });
+		});
+
+		// 点击单行：单分P直接下载；多分P的“集”则自动勾选并提示走批量下载
+		pageWrap.addEventListener('click', (e) => {
+			const span = e.target && e.target.closest ? e.target.closest('.board-item > span') : null;
+			if (!span) return;
+			const item = span.closest('.board-item');
+			const box = item && item.querySelector('input[type="checkbox"]');
+			if (!box) return;
+			const tasks = tasksOf(box);
+			span.style.backgroundColor = '#ccc';
+			if (tasks.length > 1) {
+				if (!box.checked) {
+					box.checked = true;
+					selectionSummary();
+				}
+				webToast({ message: '该集含 ' + tasks.length + ' 个分P，已勾选该集，请点击下方“批量下载”整集下载', time: 3000 });
+				return;
+			}
+			startDownloadFile({ aid: tasks[0].aid, cid: tasks[0].cid, isByPRC: false });
+		});
+		closeBtn.addEventListener('click', hide);
+
+		$('[name="selectall"]', body).addEventListener('click', () => {
+			$$('.page-wrap input[type="checkbox"]', body).forEach((c) => { c.checked = true; });
+			selectionSummary();
+		});
+		$('[name="removeSelect"]', body).addEventListener('click', () => {
+			$$('.page-wrap input[type="checkbox"]', body).forEach((c) => { c.checked = false; });
+			selectionSummary();
+		});
+
+		// 切换下载方式时，自动带出对应 RPC 地址
+		$$('input[name="downloadWay"]', body).forEach((radio) => {
+			radio.addEventListener('change', () => {
+				if (!radio.checked) return;
+				const isMotrix = radio.value === 'Motrix';
+				$('input[name="RPCURL"]', body).value = isMotrix
+					? 'ws://localhost:16800/jsonrpc'
+					: 'ws://localhost:6800/jsonrpc';
+			});
+		});
+
+		// 批量下载：选中集/分P 展开为具体下载任务（每1秒1个）
+		$('[name="downloadAll"]', body).addEventListener('click', () => {
+			const rpcUrl = $('input[name="RPCURL"]', body).value;
+			const savePath = $('input[name="savePath"]', body).value;
+			const rpcToken = $('input[name="RPCToken"]', body).value || '';
+			const wayRadio = $('input[name="downloadWay"]:checked', body);
+			const downloadWay = wayRadio ? wayRadio.value : 'Motrix';
+
+			gmSet(DOWNLOAD_SETTING_KEY, { RPCURL: rpcUrl, savePath: savePath, RPCToken: rpcToken, downloadWay: downloadWay });
+
+			const checkedBoxes = $$('.page-wrap input[type="checkbox"]:checked', body);
+			if (!checkedBoxes.length) {
+				webToast({ message: '至少需要选中1项', background: '#FF4D40' });
+				return;
+			}
+			if (!savePath) {
+				webToast({ message: '保存路径不能为空', background: '#FF4D40' });
+				return;
+			}
+			if (!rpcUrl) {
+				webToast({ message: 'RPC地址不能为空', background: '#FF4D40' });
+				return;
+			}
+			const tasks = [];
+			checkedBoxes.forEach((box) => {
+				tasksOf(box).forEach((t) => tasks.push(t));
+			});
+			tasks.forEach((task, i) => {
+				setTimeout(() => {
+					startDownloadFile({
+						aid: task.aid,
+						cid: task.cid,
+						fileName: task.fileBase,
+						isByPRC: true,
+						savePath: savePath,
+						RPCURL: rpcUrl,
+						RPCToken: rpcToken,
+					});
+				}, (i + 1) * 1000);
+			});
+		});
+
+		return { mask: mask, body: body, show: show, hide: hide };
+	}
+
+	// 拉取视频信息：普通视频(多P/单P)返回 parts；合集返回按“集”归一化的 episodes
+	function prepareDownloadPages() {
+		const bv = currentBv();
+		if (!bv) return Promise.resolve({ status: 'bv_null' });
+
+		return gmRequest('GET', VIEW_API + '?bvid=' + bv)
+			.then((text) => {
+				let json = null;
+				try { json = JSON.parse(text); } catch (_) { /* ignore */ }
+				if (!json || json.code !== 0 || !json.data) return { status: 'request_error' };
+
+				const data = json.data;
+				const aid = data.aid;
+				if (!aid) return { status: 'aid_null' };
+
+				const pic = data.pic || '';
+				const title = data.title || '';
+
+				// 合集：按集展示，每集内部再展开分P
+				if (data.ugc_season && data.ugc_season.sections) {
+					const season = normalizeSeason(data);
+					if (season.episodes.length) {
+						return {
+							status: 'success',
+							downloadData: {
+								model: { kind: 'season', episodes: season.episodes, currentAid: aid },
+								pic: pic,
+								title: season.title || title,
+							},
+						};
+					}
+				}
+				// 普通视频/多P（含单P）：直接列出全部分P
+				const parts = (data.pages || []).map((p) => ({
+					aid: aid, cid: p.cid, page: p.page || 1, part: p.part || '',
+				}));
+				return {
+					status: 'success',
+					downloadData: { model: { kind: 'plain', parts: parts }, pic: pic, title: title },
+				};
+			})
+			.catch(() => ({ status: 'request_error' }));
+	}
+
+	// 获取播放地址并触发下载
+	function startDownloadFile(options) {
+		const { aid, cid } = options;
+		gmRequest('GET', PLAYURL_API + '?avid=' + aid + '&cid=' + cid + '&qn=112')
+			.then((text) => {
+				let json = null;
+				try { json = JSON.parse(text); } catch (_) { /* fallthrough */ }
+				if (json && json.code === 0 && json.data && json.data.durl && json.data.durl[0]) {
+					const fileName = cleanFileName(options.fileName);
+					const downloadUrl = json.data.durl[0].url;
+					if (options.isByPRC) {
+						rpcDownload({
+							fileName: fileName, url: downloadUrl,
+							savePath: options.savePath, RPCURL: options.RPCURL, RPCToken: options.RPCToken,
+						}).then(
+							(msg) => webToast({ message: msg, time: 3000 }),
+							(err) => webToast({ message: err, time: 3000, background: '#FF4D40' })
+						);
+					} else {
+						window.open(downloadUrl);
+					}
+				} else {
+					webToast({ message: '获取下载链接失败', background: '#FF4D40' });
+				}
+			})
+			.catch(() => webToast({ message: '获取下载链接失败', background: '#FF4D40' }));
+	}
+
+	// 通过 aria2 JSON-RPC(WebSocket) 推送下载任务
+	function rpcDownload(opts) {
+		const savePath = opts.savePath || 'D:/';
+		const rpcUrl = opts.RPCURL || 'ws://localhost:16800/jsonrpc';
+		return new Promise((resolve, reject) => {
+			let socket;
+			try {
+				socket = new WebSocket(rpcUrl);
+			} catch (_) {
+				reject('Aria2连接错误，请打开Aria2和检查RPC设置！');
+				return;
+			}
+			let settled = false;
+			const settle = (fn, val) => {
+				if (settled) return;
+				settled = true;
+				try { socket.close(); } catch (_) {}
+				fn(val);
+			};
+			const rpcMsg = {
+				jsonrpc: '2.0', id: 'huahuacat', method: 'aria2.addUri',
+				params: [[opts.url], {
+					dir: savePath,
+					'max-connection-per-server': '16',
+					header: ['User-Agent:' + navigator.userAgent, 'Cookie:' + document.cookie, 'Referer:' + window.location.href],
+				}],
+			};
+			if (opts.fileName) rpcMsg.params[1].out = opts.fileName;
+			if (opts.RPCToken) rpcMsg.params.unshift('token:' + opts.RPCToken);
+
+			socket.onerror = () => settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
+			socket.onclose = () => { if (!settled) settle(reject, 'Aria2连接已断开，请检查RPC设置！'); };
+			socket.onopen = () => {
+				try { socket.send(JSON.stringify(rpcMsg)); } catch (_) {
+					settle(reject, 'Aria2连接错误，请打开Aria2和检查RPC设置！');
+				}
+			};
+			socket.onmessage = (event) => {
+				let msg = null;
+				try { msg = JSON.parse(event.data); } catch (_) { return; }
+				if (msg && msg.method === 'aria2.onDownloadStart') {
+					settle(resolve, 'Aria2 开始下载【' + (opts.fileName || '') + '】');
+				} else if (msg && msg.id === 'huahuacat' && typeof msg.result === 'string') {
+					// 某些 aria2 配置不会推送 onDownloadStart，收到 addUri 响应也视为已受理
+					settle(resolve, 'Aria2 已接收下载任务【' + (opts.fileName || '') + '】');
+				}
+			};
+		});
+	}
+
+	// ---------------- 浏览记录提醒 ----------------
+	function initRecordView() {
+		const host = window.location.host;
+		const isVideoPage = host === 'www.bilibili.com' && window.location.pathname.indexOf('/video') !== -1;
+
+		// 浏览视频时记录 BV 号（保留最近约 4800 字符）
+		if (isVideoPage) {
+			let lastHref = '';
+			setInterval(() => {
+				if (window.location.href === lastHref) return;
+				lastHref = window.location.href;
+				const bv = currentBv();
+				if (!bv) return;
+				let cache = gmGet(RECORD_KEY, '') || '';
+				if (cache.length > 12 * 500) cache = cache.substring(12 * 100);
+				if (cache.indexOf(bv) === -1) {
+					cache += bv;
+					gmSet(RECORD_KEY, cache);
+				}
+			}, 500);
+		}
+
+		// 非视频详情页：搜索结果/用户主页提示“已看”
+		if (host.indexOf('bilibili.com') !== -1) {
+			const targets = [
+				{ node: '.bili-video-card', top: 8, right: 12 },          // 搜索结果
+				{ node: '#page-index .small-item', top: 12, right: 12 },  // 用户投稿
+				{ node: '#submit-video-list .small-item', top: 12, right: 12 }, // 用户主页
+				{ node: '#page-series-detail .small-item.fakeDanmu-item', top: 12, right: 12 },
+			];
+
+			function markAsSeen(ele, top, right) {
+				if (ele.querySelector('div[name="marklooked"]')) return;
+				ele.style.position = 'relative';
+				const badge = document.createElement('div');
+				badge.setAttribute('name', 'marklooked');
+				badge.textContent = '已看';
+				badge.style.cssText = 'z-index:100;position:absolute;top:' + top + 'px;right:' + right +
+					'px;background-color:rgba(251,123,159,1);border-radius:3px;font-size:10px;color:#FFF;padding:0 2px;';
+				ele.appendChild(badge);
+			}
+
+			function scan() {
+				const cache = gmGet(RECORD_KEY, '') || '';
+				targets.forEach((t) => {
+					$$(t.node).forEach((ele) => {
+						if (ele.getAttribute('dealxll') === 'true') return;
+						const link = ele.querySelector('a[href^="//www.bilibili.com/video"], a[href^="https://www.bilibili.com/video"]');
+						const href = link ? link.getAttribute('href') : null;
+						if (!href) return;
+						const bvs = href.match(/(\/BV(.*?)\/)/g);
+						if (!bvs || bvs.length !== 1) return;
+						const bv = bvs[0].replace(/\//g, '');
+						ele.addEventListener('click', () => markAsSeen(ele, t.top, t.right));
+						if (cache.indexOf(bv) !== -1) markAsSeen(ele, t.top, t.right);
+						ele.setAttribute('dealxll', 'true');
+					});
+				});
+			}
+			setInterval(scan, 500);
+			GM_registerMenuCommand('清空B站浏览记录', () => {
+				if (confirm('是否要清空B站浏览记录？清空后将不可恢复...')) {
+					gmSet(RECORD_KEY, '');
+					// 清除页面上已显示的角标
+					$$('div[name="marklooked"]').forEach((b) => {
+						if (b.parentNode) b.parentNode.removeChild(b);
+					});
 				}
 			});
-		})
-	};
-	this.isRun = function(){
+		}
+	}
+
+	// ---------------- 视频简介网址转链接 ----------------
+	const URL_REG = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.,@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?/g;
+	function linkify(root) {
+		if (!root) return;
+		const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+		const textNodes = [];
+		while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+		textNodes.forEach((tn) => {
+			const value = tn.nodeValue;
+			if (!value) return;
+			// 不处理 <a> 内部文本以及我们已经转过的节点，避免死循环/重复转换
+			const parent = tn.parentElement;
+			if (!parent || parent.tagName === 'A' || parent.closest('[data-shx-linkified]')) return;
+
+			URL_REG.lastIndex = 0;
+			let last = 0;
+			let m;
+			let made = false;
+			const frag = document.createDocumentFragment();
+			while ((m = URL_REG.exec(value)) !== null) {
+				const matched = m[0];
+				if (last < m.index) frag.appendChild(document.createTextNode(value.slice(last, m.index)));
+				const isBili = matched.indexOf('bilibili.com') !== -1;
+				const el = document.createElement(isBili ? 'span' : 'a');
+				if (!isBili) {
+					el.setAttribute('href', matched);
+					el.setAttribute('target', '_blank');
+					el.style.color = '#00AEEC';
+				}
+				el.textContent = matched;
+				el.setAttribute('data-shx-linkified', '1');
+				frag.appendChild(el);
+				made = true;
+				last = URL_REG.lastIndex;
+			}
+			if (!made) return;
+			if (last < value.length) frag.appendChild(document.createTextNode(value.slice(last)));
+			parent.replaceChild(frag, tn);
+		});
+	}
+
+	function initTextToLink() {
+		const root = $('#v_desc');
+		if (!root) return;
+		linkify(root);
+
+		const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+		if (!MutationObserver) return;
+		const observer = new MutationObserver(() => linkify(root));
+		observer.observe(root, { characterData: true, childList: true });
+	}
+
+	// ============================================================
+	// 服务器厂商页面导航条
+	// ============================================================
+	const SERVER_NAV_KEY = 'server_navigation_key';
+	const SERVER_HOSTS = ['tencent.com', 'aliyun.com', 'huaweicloud.com', 'bandwagonhost.com', 'hostwinds.com'];
+	// 服务器导航面板容器高 150px，初始隐藏在屏幕下方
+	const SERVER_CSS = (number) => `
+		#server-containerx${number}{
+			position:fixed; left:50%; bottom:-150px; transform:translateX(-50%);
+			width:60% !important; max-width:700px !important; height:150px !important;
+			background:#fafafa; box-shadow:rgba(0,0,0,.2) 0 -1px 5px -1px, rgba(0,0,0,.1) 0 1px 2px -1px;
+			z-index:2147483647; box-sizing:border-box; overflow:visible;
+			transition-duration:.8s; -webkit-transition-duration:.8s;
+		}
+		#server-containerx${number}:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+		#server-container-decoration${number}{
+			height:5px; background-color:#e4eaf6; position:relative; z-index:1;
+			box-shadow:rgba(0,0,0,.2) 0 -1px 5px -1px, rgba(0,0,0,.1) 0 1px 2px -1px;
+		}
+		#server-container-expand${number}{
+			cursor:pointer; position:absolute; width:50px; height:30px; background-color:#e4eaf6;
+			top:-30px; left:50%; transform:translateX(-50%); border-radius:5px 5px 0 0;
+			text-align:center; font-size:16px; line-height:30px; color:#6b7c93; user-select:none;
+		}
+		#server-container-expand${number}:hover{transition:.6s; transform:translateX(-50%) scale(1.05)}
+		.server-container-column9980x{position:relative}
+		.server-container-column9980x:not(:last-child):after{
+			position:absolute; height:calc(100% - 4em); right:0; content:''; width:0;
+			border-left:solid #e6e7eb 2px; top:50%; transform:translateY(-50%);
+		}
+		#server-container-body${number}{width:100%;height:100%;overflow:auto}
+		#server-containerx${number} a{color:#4766f4;text-decoration:none}
+	`;
+
+	function startServerNavigation() {
 		const host = window.location.host;
-		for(let i=0;i<this.allowHosts.length;i++){
-			if(host.indexOf(this.allowHosts[i])!=-1){
-				return true;
-			}
-		}
-		return false;
-	};
-	this.temporary=function(track){
-	  const pathname = window.location.pathname;
-	  const pathnameRes = ["/", "/product", "/product/list"].some((item) => pathname === item);
-		if(pathnameRes){
-			const anchorRun=()=>{
-				var num = 0;
-				const anchor = decodeURIComponent("%E5%AE%89%E5%85%A8%7C%E8%AF%86%E5%88%AB%7C%E6%A8%A1%E5%9E%8B%7C%E5%AE%A1%E6%A0%B8%7C%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%7CAI%7C%E6%9C%8D%E5%8A%A1%E5%99%A8%7C%E4%B8%BB%E6%9C%BA%7C%E6%B4%BB%E5%8A%A8%7C%E6%96%87%E6%9C%AC%7C%E6%96%87%E5%AD%97%7C%E8%AF%AD%E8%A8%80%7C%E5%9B%BE%E5%83%8F%7C%E5%9B%BE%E7%89%87%7C%E8%A7%86%E9%A2%91%7C%E5%9F%9F%E5%90%8D%7C%E7%9F%AD%E4%BF%A1");
-				const anchorItems = anchor.split("|");
-				document.querySelectorAll("a").forEach(function(element,index){
-				  var href = element.getAttribute("href");
-				  if(!href || (element.getAttribute("anchor-i") && element.getAttribute("anchor-i-url")===href)){
-					return;
-				  }
-				  element.setAttribute("anchor-i","true");
-				  element.setAttribute("anchor-i-url",href);
-				  let textContent = "";
-				  for(let node of element.childNodes){
-					if(node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.tagName!== 'A')) {
-					  textContent += node.textContent;
-					}
-				  }
-				  textContent = textContent.replace(/\n|\t|\s/g, "");
-				  const result = anchorItems.some((item) => textContent.indexOf(item)!=-1);
-				  if(result){
-					if(href.indexOf(track)!=-1) return;
-					element.setAttribute("rel", "noreferrer nofollow");
-					href = href + (href.indexOf("?")!=-1 ? "&" : "?") + track;
+		if (!SERVER_HOSTS.some((h) => host.indexOf(h) !== -1)) return;
 
-					element.removeAttribute("data-spm");
-					element.removeAttribute("data-spm-anchor-id");
-					element.removeAttribute("data-tracker-scm");
+		GM_registerMenuCommand('服务器导航设置', () => {
+			const isOpen = gmGet(SERVER_NAV_KEY, true);
+			const person = prompt('是否开启服务器导航功能？请填写yes或者no....', isOpen ? 'yes' : 'no');
+			if (person === null) return;
+			const value = person === 'yes' || person === 'YES';
+			const valid = person === 'no' || person === 'NO' || value;
+			if (valid) gmSet(SERVER_NAV_KEY, value);
+			webToast({ message: valid ? (value ? '开启服务器导航功能' : '关闭服务器导航功能') : '参数错误，只能填写yes或者no', background: '#474747' });
+			if (valid) setTimeout(() => { try { location.reload(); } catch (_) {} }, 1000);
+		});
 
-					element.setAttribute("href", href);
-					element.setAttribute("anchor-i-url",href);
-					num++;
-				  }
-				});
-			}
-			anchorRun();
-			setInterval(function(){
-			  anchorRun();
-			},1000);
-		}
-	};
-	this.start=function(){
-		if(!this.isRun()){
-			return;
-		}
-		this.serverMenu();
-		const isOpenServer = GM_getValue("server_navigation_key", true);
-		if(isOpenServer){
-			this.generateHtml();
-		}
-	};
-	this.generateHtml=function(){
-		const number = this.number;
-		const containerHight = this.containerHight;
-		var css=`
-			#server-containerx`+number+`{
-				display: block;
-				bottom: -`+containerHight+`px;
-				clear: none !important;
-				float: none !important;
-				left: 50%;
-				margin: 0px !important;
-				max-height: none !important;
-				max-width: none !important;
-				opacity: 1;
-				overflow: visible !important;
-				padding: 0px !important;
-				position: fixed;
-				right: auto !important;
-				top: auto !important;
-				vertical-align: baseline !important;
-				visibility: visible !important;
-				z-index: 2147483647;
-				background: rgb(250, 250, 250) !important;
-				transition-duration:0.8s!important;
-				-webkit-transition-duration:0.8s!important;
-				transform:translateX(-50%);
-				width: 60% !important;
-				height: `+containerHight+`px !important;
-				max-width:700px!important;
-				box-sizing: border-box!important;
-				box-shadow: rgba(0, 0, 0, 0.2) 0px -1px 5px -1px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px !important;
-			}
-			#server-containerx`+number+`:hover{
-				-webkit-box-shadow: 0 4px 12px rgba(0,0,0,.08);
-				box-shadow: 0 4px 12px rgba(0,0,0,.08);
-			}
-			#server-container-decoration`+number+`{
-				inset: auto !important;
-				clear: none !important;
-				display: block !important;
-				float: none !important;
-				height: 5px !important;
-				margin: 0px !important;
-				max-height: none !important;
-				max-width: none !important;
-				opacity: 1 !important;
-				overflow: visible !important;
-				padding: 0px !important;
-				position: relative !important;
-				vertical-align: baseline !important;
-				visibility: visible !important;
-				width: auto !important;
-				z-index: 1 !important;
-				background-color: #e4eaf6 !important;
-				box-shadow: rgba(0, 0, 0, 0.2) 0px -1px 5px -1px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px !important;
-			}
-			#server-container-expand`+number+`{
-				cursor:pointer;
-				position:absolute;
-				width:50px;
-				height:30px;
-				background-color: #e4eaf6;
-				top:-30px;
-				left:50%;
-				transform:translateX(-50%);
-				border-radius: 5px 5px 0px 0px;
-			}
-			#server-container-expand`+number+`:hover{
+		if (!gmGet(SERVER_NAV_KEY, true)) return;
 
-			}
-			#server-container-expand`+number+`>svg{
-				width:50px;
-				height:30px;
-			}
-			#server-container-expand`+number+`>svg:hover{
-				transition: 0.6s;
-				transform: scale(1.1);
-			}
-			.server-container-column9980x{
-				position:relative;
-			}
-			.server-container-column9980x:not(:last-child):after{
-				position: absolute;
-				height: calc(100% - 4em);
-				right: 0px;
-				content: '';
-				width: 0px;
-				border-left: solid #e6e7eb 2px;
-				top: 50%;
-				transform: translateY(-50%);
-			}
-			#server-container-body`+number+`{
-				width:100%;
-				height:100%;
-			}
-		`;
-		var html=`
-			<div id="server-containerx`+number+`">
-				<div id="server-container-decoration`+number+`">
-					<div id="server-container-expand`+number+`">
-						<svg t="1719906770072" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4303" width="256" height="256"><path d="M444 136.3L123.8 324.8l3.2 371.5 323.3 183 320.2-188.5-3.2-371.5z" fill="#FFFFFF" p-id="4304"></path><path d="M630 287.6l-20.1-11.4-279.7 164.7L333 767l20.1 11.3-2.8-326z" fill="#06F3FF" p-id="4305"></path><path d="M746.8 489.8l-8.6 5.2c-4.7 2.9-6.2 9-3.4 13.7 1.9 3.1 5.2 4.8 8.6 4.8 1.8 0 3.5-0.5 5.2-1.4l8.6-5.2c4.7-2.9 6.2-9 3.4-13.7-2.9-4.7-9-6.2-13.8-3.4z" fill="#005BFF" p-id="4306"></path><path d="M638.6 534c-1.6-0.9-3.4-1.3-5.2-1.3-4.9 0-9.9 2.6-13 4.6-20.6 13-38 47.5-38 75.2 0 12.2 3.4 21.4 9.1 24.5 6 3.3 14-0.6 18.2-3.3 20.6-13 38-47.5 38-75.2 0-12.2-3.4-21.3-9.1-24.5z m-9.9 50.4l-8.6 5.2c-1.6 1-3.4 1.4-5.2 1.4-3.4 0-6.7-1.7-8.6-4.8-2.9-4.7-1.3-10.9 3.4-13.7l8.6-5.2c4.7-2.9 10.9-1.3 13.7 3.4 3 4.7 1.5 10.9-3.3 13.7z" fill="#E6E6E6" p-id="4307"></path><path d="M618.4 567.3l-8.6 5.2c-4.7 2.9-6.2 9-3.4 13.7 1.9 3.1 5.2 4.8 8.6 4.8 1.8 0 3.5-0.5 5.2-1.4l8.6-5.2c4.7-2.9 6.2-9 3.4-13.7-2.9-4.7-9.1-6.3-13.8-3.4z" fill="#E6E6E6" p-id="4308"></path><path d="M444 136.3L123.8 324.8l3.2 371.5 323.3 183 320.1-188.5-3.2-371.5-323.2-183zM166.8 672.9L164 347.6l280.3-165.1 71.2 40.3-280.3 165.1 2.8 325.3-71.2-40.3z m262.8 148.7l-76.5-43.3L333 767l-74.9-42.4-2.8-325.3 280.4-165.1 74.2 42 20.1 11.4 77.8 44-281 165.5 2.8 324.5z m40 0L467 519.8l260.7-153.5 2.6 301.7-260.7 153.6z m287.6-314.7l-8.6 5.2c-1.6 1-3.4 1.4-5.2 1.4-3.4 0-6.7-1.7-8.6-4.8-2.9-4.7-1.3-10.9 3.4-13.7l8.6-5.2c4.7-2.9 10.9-1.3 13.7 3.4 2.9 4.7 1.4 10.9-3.3 13.7z" fill="#005BFF" p-id="4309"></path><path d="M704 515.6l-8.6 5.2c-4.7 2.9-6.2 9-3.4 13.7 1.9 3.1 5.2 4.8 8.6 4.8 1.8 0 3.5-0.5 5.2-1.4l8.6-5.2c4.7-2.9 6.2-9 3.4-13.7-2.9-4.7-9-6.2-13.8-3.4zM827.2 430.8c-5.5 0-10 4.5-10 10v10c0 5.5 4.5 10 10 10s10-4.5 10-10v-10c0-5.5-4.5-10-10-10zM837.2 390.8c0-5.5-4.5-10-10-10s-10 4.5-10 10v10c0 5.5 4.5 10 10 10s10-4.5 10-10v-10zM837.2 340.8c0-5.5-4.5-10-10-10s-10 4.5-10 10v10c0 5.5 4.5 10 10 10s10-4.5 10-10v-10zM837.2 290.8c0-5.5-4.5-10-10-10s-10 4.5-10 10v10c0 5.5 4.5 10 10 10s10-4.5 10-10v-10zM803.4 467.4c-2.9-4.7-9-6.3-13.7-3.4l-8.6 5.2c-4.7 2.9-6.2 9-3.4 13.7 1.9 3.1 5.2 4.8 8.6 4.8 1.8 0 3.5-0.5 5.2-1.4l8.6-5.2c4.6-2.9 6.1-9 3.3-13.7zM665.3 540.1c-3-10.8-8.9-19.1-17.1-23.6-11.2-6.1-24.8-4.8-38.5 3.9-26.5 16.8-47.3 57.2-47.3 92.1 0 19.9 7.1 35.2 19.5 42 4.6 2.5 9.6 3.8 14.9 3.8 7.5 0 15.6-2.6 23.7-7.7 25.9-16.4 46.4-55.4 47.3-89.7l3.9-2.4c4.7-2.9 6.2-9 3.4-13.7-2.2-3.4-6.1-5.1-9.8-4.7z m-55.6 93.7c-4.2 2.7-12.2 6.6-18.2 3.3-5.7-3.1-9.1-12.3-9.1-24.5 0-27.7 17.4-62.2 38-75.2 3.1-1.9 8.1-4.6 13-4.6 1.8 0 3.6 0.4 5.2 1.3 5.7 3.1 9.1 12.3 9.1 24.5 0 27.7-17.4 62.1-38 75.2z" fill="#005BFF" p-id="4310"></path><path d="M891.2 321.7c-5.5 0-10 4.5-10 10v156.4l-81.7 49.3c-4.7 2.9-6.2 9-3.4 13.7 1.9 3.1 5.2 4.8 8.6 4.8 1.8 0 3.5-0.5 5.2-1.4l91.4-55.1V331.7c-0.1-5.5-4.6-10-10.1-10zM817.3 239.6c-0.1 0.4-0.1 0.8-0.1 1.3v10c0 5.5 4.5 10 10 10s10-4.5 10-10v-10c0-0.4 0-0.9-0.1-1.3 23.4-4.6 41-25.3 41-50 0-28.2-22.8-51-51-51s-51 22.8-51 51c0 24.7 17.7 45.4 41.2 50z" fill="#005BFF" p-id="4311"></path></svg>
-					</div>
-				</div>
-				<div id="server-container-body`+number+`">
-
-				</div>
+		const number = rid();
+		const container = document.createElement('div');
+		container.id = 'server-containerx' + number;
+		container.innerHTML = `
+			<div id="server-container-decoration${number}">
+				<div id="server-container-expand${number}">▲</div>
 			</div>
-		`;
+			<div id="server-container-body${number}"></div>`;
+		document.body.appendChild(container);
+		addStyle(SERVER_CSS(number));
 
-		this.addStyle(css);
-		document.body.insertAdjacentHTML("beforeend", html);
-		this.addEventListener();
-	};
-	this.addEventListener=function(){
-		const self = this;
-		const number = this.number;
-		function expandOrShow(forceClose=false){
-			const serverContainerx = document.querySelector("#server-containerx"+number);
-			var {bottom, height} = window.getComputedStyle(serverContainerx);
+		const bodyBox = $('#server-container-body' + number);
+		const expandBtn = $('#server-container-expand' + number);
 
-			if(bottom=="0px" || forceClose){
-				bottom = "-"+height;
-			}else{
-				bottom = "0px";
-			}
-			serverContainerx.style.bottom = bottom;
-		}
+		const expandOrShow = (forceClose) => {
+			const cs = window.getComputedStyle(container);
+			const shown = cs.bottom === '0px';
+			container.style.bottom = (shown || forceClose) ? '-' + (cs.height || 150) : '0px';
+		};
+		expandBtn.addEventListener('click', () => expandOrShow(false));
 
-		document.querySelector("#server-container-expand"+number).addEventListener("click",function(){
-			expandOrShow();
-		});
+		// 拉取导航内容
+		const api = 'https://server.staticj.top/api/server/discover?url=' + encodeURIComponent(window.location.href) + '&no=1';
+		gmRequest('GET', api)
+			.then((text) => {
+				const data = JSON.parse(text).data;
+				if (!data) return;
+				bodyBox.innerHTML = data.html || '';
+				// 向下滚动超过 30px 时收起导航
+				let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				setTimeout(() => {
+					window.addEventListener('scroll', () => {
+						const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+						if (scrollTop - lastScrollTop > 30) expandOrShow(true);
+						lastScrollTop = scrollTop;
+					});
+				}, 1500);
+				// 给相关站内锚点补充来源参数
+				anchorTrack(data.track);
+			})
+			.catch(() => { /* 服务不可用时静默 */ });
+	}
 
-		var lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-		function startContainer(){
-			setTimeout(function(){
-				window.addEventListener("scroll", function () {
-					var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-					if (scrollTop - lastScrollTop > 30) { //向下滚动
-						expandOrShow(true);
-					} else { //向上滚动
+	// 给符合关键词的站内链接追加来源参数，避免被统计代码拦截
+	function anchorTrack(track) {
+		if (!track) return;
+		const pathname = window.location.pathname;
+		if (['/', '/product', '/product/list'].indexOf(pathname) === -1) return;
 
-					}
-					lastScrollTop = scrollTop;
+		const keywordText = decodeURIComponent(
+			'%E5%AE%89%E5%85%A8%7C%E8%AF%86%E5%88%AB%7C%E6%A8%A1%E5%9E%8B%7C%E5%AE%A1%E6%A0%B8%7C%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%7CAI%7C%E6%9C%8D%E5%8A%A1%E5%99%A8%7C%E4%B8%BB%E6%9C%BA%7C%E6%B4%BB%E5%8A%A8%7C%E6%96%87%E6%9C%AC%7C%E6%96%87%E5%AD%97%7C%E8%AF%AD%E8%A8%80%7C%E5%9B%BE%E5%83%8F%7C%E5%9B%BE%E7%89%87%7C%E8%A7%86%E9%A2%91%7C%E5%9F%9F%E5%90%8D%7C%E7%9F%AD%E4%BF%A1'
+		);
+		const keywords = keywordText.split('|');
+
+		const scan = () => {
+			$$('a').forEach((a) => {
+				const href = a.getAttribute('href');
+				if (!href || (a.getAttribute('anchor-i') && a.getAttribute('anchor-i-url') === href)) return;
+				let text = '';
+				a.childNodes.forEach((node) => {
+					if (node.nodeType === 3 || (node.nodeType === 1 && node.tagName !== 'A')) text += node.textContent;
 				});
-			}, 1500);
-		}
+				text = text.replace(/\n|\t|\s/g, '');
+				if (!keywords.some((k) => text.indexOf(k) !== -1)) return;
+				if (href.indexOf(track) !== -1) return;
 
-		var url = "https://server.staticj.top/api/server/discover?url="+encodeURIComponent(window.location.href)+"&no=1";
-		self.request("get", url, null).then((data)=>{
-			if(data.result=="success" && !!data.responseText){
-				const {html, track} = JSON.parse(data.responseText).data;
-				document.querySelector("#server-container-body"+number).insertAdjacentHTML("beforeend", html);
-				startContainer();
-				self.temporary(track);
-			}
-		}).catch((error)=>{
-			console.log(error);
-		});
-	};
-}
-(new ServerNavigation()).start();
+				a.setAttribute('anchor-i', 'true');
+				a.setAttribute('anchor-i-url', href);
+				a.setAttribute('rel', 'noreferrer nofollow');
+				a.removeAttribute('data-spm');
+				a.removeAttribute('data-spm-anchor-id');
+				a.removeAttribute('data-tracker-scm');
+				const sep = href.indexOf('?') !== -1 ? '&' : '?';
+				a.setAttribute('href', href + sep + track);
+				a.setAttribute('anchor-i-url', href + sep + track);
+			});
+		};
+		scan();
+		setInterval(scan, 1000);
+	}
 
+	// ============================================================
+	// 启动
+	// ============================================================
+	if (isPC()) {
+		GM_registerMenuCommand('功能开关', usersSeting);
+	} else {
+		settings.bilibiliHelper = false;
+	}
+
+	if (settings.bilibiliHelper) {
+		startBilibiliHelper();
+	}
+	startServerNavigation();
 })();

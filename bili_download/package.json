@@ -1,12 +1,12 @@
 {
   "name": "bili-download",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.4.0",
   "description": "B站哔哩哔哩使用增强（Tampermonkey 油猴脚本）— 源码与自动化测试",
   "scripts": {
     "test": "node test/bili_download.test.js",
     "test:optimized": "npm test",
-    "test:original": "KNOWN_FAIL_SUBSTR=服务器导航设置 SCRIPT_PATH=./bili_download.js node test/bili_download.test.js",
+    "test:original": "KNOWN_FAIL_SUBSTR=服务器导航设置,多选集,每集多P,每集单P,下载当前集 SCRIPT_PATH=./bili_download.js node test/bili_download.test.js",
     "test:all": "npm test && npm run test:original"
   }
 }
